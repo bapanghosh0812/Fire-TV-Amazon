@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Lets Alexa (remote mic or a paired Echo) drive this app's MediaSession on Fire OS. -->
+  <uses-permission android:name="com.amazon.permission.media.session.voicecommandcontrol" />
+  <application>
+    <meta-data android:name="com.amazon.voice.supports_background_media_session" android:value="true" />
+  </application>
+</manifest>

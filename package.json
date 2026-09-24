@@ -1,0 +1,20 @@
+{
+  "name": "storyloom",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Storyloom: family AI storytelling for Fire TV",
+  "license": "MIT",
+  "scripts": {
+    "tv": "npm --prefix apps/tv run start",
+    "tv:android": "npm --prefix apps/tv run android",
+    "tv:web": "npm --prefix apps/tv run web",
+    "companion": "npm --prefix apps/companion run dev",
+    "typecheck": "npm --prefix apps/tv run typecheck && npm --prefix apps/companion run build && npm --prefix services/api run typecheck && npm --prefix infra run typecheck",
+    "test": "npm --prefix services/api test && python services/agent/.venv/Scripts/python.exe -m pytest -q services/agent/tests",
+    "deploy": "npm --prefix infra run deploy",
+    "brand": "npm --prefix tools/brand run render"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

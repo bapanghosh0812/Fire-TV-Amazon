@@ -1,0 +1,27 @@
+{
+  "name": "storyloom-infra",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Storyloom AWS infrastructure (CDK)",
+  "scripts": {
+    "build:agent": "python ../services/agent/build.py",
+    "build:companion": "npm --prefix ../apps/companion run build",
+    "synth": "cdk synth",
+    "deploy": "npm run build:agent && npm run build:companion && cdk deploy --require-approval never --outputs-file ../outputs.json",
+    "diff": "cdk diff",
+    "destroy": "cdk destroy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.270.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "aws-cdk": "2.1143.0",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.2"
+  }
+}

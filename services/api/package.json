@@ -1,0 +1,29 @@
+{
+  "name": "storyloom-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Storyloom HTTP + WebSocket API (AWS Lambda, Node.js 22)",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.890.0",
+    "@aws-sdk/client-bedrock-agentcore": "^3.890.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.890.0",
+    "@aws-sdk/client-dynamodb": "^3.890.0",
+    "@aws-sdk/client-s3": "^3.890.0",
+    "@aws-sdk/client-secrets-manager": "^3.890.0",
+    "@aws-sdk/cloudfront-signer": "^3.890.0",
+    "@aws-sdk/lib-dynamodb": "^3.890.0",
+    "@aws-sdk/s3-presigned-post": "^3.890.0",
+    "jose": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.150",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.2"
+  }
+}

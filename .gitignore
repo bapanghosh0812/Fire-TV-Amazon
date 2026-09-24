@@ -1,0 +1,52 @@
+# dependencies
+node_modules/
+.pnp.*
+.yarn/
+
+# secrets & local config — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.key
+*.jks
+*.keystore
+!debug.keystore
+credentials*
+secrets*.json
+
+# build output
+dist/
+build/
+web-build/
+.expo/
+.expo-shared/
+apps/tv/android/
+apps/tv/ios/
+*.apk
+*.aab
+infra/cdk.out/
+infra/cdk.context.json
+outputs.json
+coverage/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+services/agent/package/
+*.zip
+
+# tooling
+.claude/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.metro-health-check*

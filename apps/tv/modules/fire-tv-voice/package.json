@@ -1,0 +1,7 @@
+{
+  "name": "fire-tv-voice",
+  "version": "0.1.0",
+  "description": "Alexa voice transport controls (MediaSession) for React Native apps on Fire TV",
+  "main": "index.ts",
+  "license": "MIT"
+}
