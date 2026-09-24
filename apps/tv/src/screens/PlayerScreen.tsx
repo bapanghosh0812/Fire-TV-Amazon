@@ -12,6 +12,7 @@ import { ReadAlongText } from '../player/ReadAlongText';
 import { activeMarkAt, buildTimeline } from '../player/readAlong';
 import { useNarration } from '../player/useNarration';
 import { alexaAvailable, useAlexaVoice } from '../player/useAlexaVoice';
+import { useT } from '../i18n';
 import { ChoiceOverlay } from '../player/ChoiceOverlay';
 import { EndOverlay } from '../player/EndOverlay';
 import { useBackHandler, useRemoteKeys } from '../remote/hooks';
@@ -37,6 +38,7 @@ function pathFor(story: Story, chosen?: 'a' | 'b'): StoryPage[] {
 }
 
 export function PlayerScreen({ route, navigation }: Props) {
+  const t = useT();
   const story = useLibrary((s) => s.stories.find((x) => x.id === route.params.storyId));
   const [chosen, setChosen] = useState<'a' | 'b' | undefined>(story?.chosen);
   const [cursor, setCursor] = useState(0);
@@ -192,7 +194,7 @@ export function PlayerScreen({ route, navigation }: Props) {
   if (!story || !page) {
     return (
       <View style={[styles.screen, styles.center]}>
-        <T variant="h2">{loadError ?? 'Opening the book…'}</T>
+        <T variant="h2">{loadError ?? t('player.opening')}</T>
       </View>
     );
   }
@@ -216,7 +218,7 @@ export function PlayerScreen({ route, navigation }: Props) {
       <Animated.View style={[styles.top, { opacity: chromeOpacity }]}>
         <View style={{ flex: 1 }}>
           <T variant="overline" color={colors.gold}>
-            {story.hero.name.toUpperCase()} · PAGE {cursor + 1}
+            {story.hero.name.toUpperCase()} · {t('player.page', { n: cursor + 1 })}
           </T>
           <T variant="h3" numberOfLines={1} style={{ marginTop: px(6) }}>
             {story.title}
@@ -232,17 +234,17 @@ export function PlayerScreen({ route, navigation }: Props) {
 
       {/* Bottom chrome: controls hint */}
       <Animated.View style={[styles.controls, { opacity: chromeOpacity }]}>
-        <ControlHint icon="left" label="Back a page" />
+        <ControlHint icon="left" label={t('player.back')} />
         <View style={styles.playBadge}>
           <Icon name={narration.playing ? 'pause' : 'play'} size={px(30)} color={colors.night} />
         </View>
-        <ControlHint icon="right" label="Next page" />
+        <ControlHint icon="right" label={t('player.next')} />
         <View style={styles.sep} />
-        <ControlHint icon={readToMe ? 'volume' : 'book'} label={readToMe ? 'Read to me · ▼ to read myself' : 'I’ll read · ▼ for read to me'} />
+        <ControlHint icon={readToMe ? 'volume' : 'book'} label={readToMe ? t('player.readToMe') : t('player.iRead')} />
         {alexaAvailable ? (
           <>
             <View style={styles.sep} />
-            <ControlHint icon="mic" label="Say “Alexa, next” or “Alexa, pause”" />
+            <ControlHint icon="mic" label={t('player.alexa')} />
           </>
         ) : null}
       </Animated.View>
@@ -281,6 +283,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 }
 
 function Goodnight({ onWake }: { onWake: () => void }) {
+  const t = useT();
   const fade = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(fade, { toValue: 1, duration: 4000, useNativeDriver: native }).start();
@@ -290,10 +293,10 @@ function Goodnight({ onWake }: { onWake: () => void }) {
     <Animated.View style={[StyleSheet.absoluteFill, styles.goodnight, { opacity: fade }]}>
       <Icon name="moon" size={px(96)} color={colors.gold} />
       <T variant="h1" style={{ marginTop: px(24) }}>
-        Goodnight
+        {t('player.goodnight')}
       </T>
       <T variant="body" color={colors.dim} style={{ marginTop: px(10) }}>
-        Press any button to keep reading
+        {t('player.wake')}
       </T>
     </Animated.View>
   );

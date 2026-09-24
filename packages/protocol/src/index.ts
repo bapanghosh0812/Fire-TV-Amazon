@@ -2,6 +2,50 @@
 // Every realtime message is a RoomEvent; every stored story is a Story.
 
 export type AgeBand = 'little' | 'kid' | 'big-kid'; // 3-5, 6-8, 9-11
+
+// ---- Languages: stories are written and narrated natively in each one ----
+export interface LanguageInfo {
+  code: string; // BCP-47, also used for speech recognition on phones
+  native: string; // how the family sees it
+  english: string; // for the story writer and docs
+  voice: string; // Amazon Polly voice
+  rtl?: boolean;
+  wordHighlight: boolean; // false for scripts without spaces: highlight by phrase
+}
+
+export const LANGUAGES: LanguageInfo[] = [
+  { code: 'en-US', native: 'English (US)', english: 'American English', voice: 'Ruth', wordHighlight: true },
+  { code: 'en-GB', native: 'English (UK)', english: 'British English', voice: 'Amy', wordHighlight: true },
+  { code: 'en-IN', native: 'English (India)', english: 'Indian English', voice: 'Kajal', wordHighlight: true },
+  { code: 'hi-IN', native: 'हिन्दी', english: 'Hindi', voice: 'Kajal', wordHighlight: true },
+  { code: 'es-ES', native: 'Español', english: 'Spanish (Spain)', voice: 'Lucia', wordHighlight: true },
+  { code: 'es-MX', native: 'Español (México)', english: 'Mexican Spanish', voice: 'Mia', wordHighlight: true },
+  { code: 'fr-FR', native: 'Français', english: 'French', voice: 'Lea', wordHighlight: true },
+  { code: 'de-DE', native: 'Deutsch', english: 'German', voice: 'Vicki', wordHighlight: true },
+  { code: 'it-IT', native: 'Italiano', english: 'Italian', voice: 'Bianca', wordHighlight: true },
+  { code: 'pt-BR', native: 'Português (Brasil)', english: 'Brazilian Portuguese', voice: 'Camila', wordHighlight: true },
+  { code: 'ja-JP', native: '日本語', english: 'Japanese', voice: 'Kazuha', wordHighlight: false },
+  { code: 'ko-KR', native: '한국어', english: 'Korean', voice: 'Seoyeon', wordHighlight: true },
+  { code: 'ar-AE', native: 'العربية', english: 'Arabic', voice: 'Hala', rtl: true, wordHighlight: true },
+  { code: 'cmn-CN', native: '中文', english: 'Mandarin Chinese (Simplified)', voice: 'Zhiyu', wordHighlight: false },
+];
+
+export const DEFAULT_LANGUAGE = 'en-US';
+
+export function languageInfo(code?: string): LanguageInfo {
+  return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
+}
+
+/** Best match for a device locale such as "hi-IN", "es-AR" or "zh-Hans-CN". */
+export function matchLanguage(locale?: string): string {
+  if (!locale) return DEFAULT_LANGUAGE;
+  const exact = LANGUAGES.find((l) => l.code.toLowerCase() === locale.toLowerCase());
+  if (exact) return exact.code;
+  const base = locale.split(/[-_]/)[0].toLowerCase();
+  if (base === 'zh') return 'cmn-CN';
+  if (base === 'es') return /mx|us|419|ar|co|cl|pe/i.test(locale) ? 'es-MX' : 'es-ES';
+  return LANGUAGES.find((l) => l.code.split('-')[0] === base)?.code ?? DEFAULT_LANGUAGE;
+}
 export type Mood = 'cozy' | 'adventure' | 'silly' | 'curious';
 export type StoryLength = 'short' | 'medium';
 
@@ -80,6 +124,7 @@ export interface Story {
   createdAt: string;
   contributors: Player[];
   narrator: string;
+  language?: string;
   status: 'weaving' | 'ready' | 'failed';
 }
 
@@ -112,7 +157,7 @@ export type RemoteKeyName = 'up' | 'down' | 'left' | 'right' | 'select' | 'back'
 export type ClientAction =
   | { action: 'thread.set'; thread: TextThread | Omit<HeroThread, 'by'> }
   | { action: 'thread.clear'; kind: ThreadKind }
-  | { action: 'settings'; mood?: Mood; length?: StoryLength }
+  | { action: 'settings'; mood?: Mood; length?: StoryLength; language?: string }
   | { action: 'vote'; storyId: string; option: 'a' | 'b' }
   | { action: 'remote'; key: RemoteKeyName }
   | { action: 'sync' }
@@ -173,6 +218,7 @@ export interface RoomState {
   mood: Mood;
   length: StoryLength;
   ageBand: AgeBand;
+  language?: string;
   storyId?: string;
 }
 

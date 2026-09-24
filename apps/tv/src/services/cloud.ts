@@ -15,6 +15,8 @@ import { useRoom } from '../state/room';
 import { useWeave } from '../state/weave';
 import { useLibrary } from '../state/library';
 import { useToast } from '../state/toast';
+import { useSettings } from '../state/settings';
+import { translate } from '../i18n';
 import RemoteControl from '../remote/RemoteControl';
 import { RemoteKey } from '../remote/keys';
 
@@ -94,7 +96,7 @@ export async function openCloudRoom(): Promise<void> {
   const res = await api<CreateRoomResponse>('/rooms', {
     method: 'POST',
     token: d.deviceToken,
-    body: JSON.stringify({ mood: room.mood, length: room.length }),
+    body: JSON.stringify({ mood: room.mood, length: room.length, language: room.language }),
   });
   tvToken = res.token;
   room.setRoom({ ...res.state, joinUrl: res.joinUrl });
@@ -146,7 +148,7 @@ function onEvent(e: RoomEvent) {
       break;
     case 'player.joined':
       room.addPlayer(e.player);
-      useToast.getState().show(`${e.player.name} joined the story`, e.player.color);
+      useToast.getState().show(translate(useSettings.getState().language, 'toast.joined', { name: e.player.name }), e.player.color);
       break;
     case 'player.left':
       room.removePlayer(e.playerId);
@@ -175,7 +177,7 @@ function onEvent(e: RoomEvent) {
       useWeave.getState().progress('done', 'Your story is ready', 1);
       break;
     case 'story.failed':
-      useWeave.getState().fail('The loom got tangled. Let’s try weaving again.');
+      useWeave.getState().fail(translate(useSettings.getState().language, 'weave.failed'));
       break;
     case 'vote.cast':
       room.castVote(e.playerId, e.option);

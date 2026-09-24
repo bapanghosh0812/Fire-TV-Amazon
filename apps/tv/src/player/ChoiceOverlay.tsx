@@ -9,6 +9,7 @@ import { Icon } from '../components/Icon';
 import { AvatarStack } from '../components/Avatar';
 import { T } from '../components/Typography';
 import { useRoom } from '../state/room';
+import { useT } from '../i18n';
 import { colors, px, radius } from '../theme/tokens';
 
 const VOTE_SECONDS = 20;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function ChoiceOverlay({ story, choice, onDecided }: Props) {
+  const t = useT();
   const players = useRoom((s) => s.players);
   const remoteVotes = useRoom((s) => s.votes);
   const [tvVote, setTvVote] = useState<'a' | 'b' | undefined>();
@@ -84,14 +86,14 @@ export function ChoiceOverlay({ story, choice, onDecided }: Props) {
           <View style={styles.badge}>
             <Icon name="sparkle" size={px(24)} color={colors.night} />
             <T variant="overline" color={colors.night}>
-              THE FAMILY DECIDES
+              {t('choice.badge')}
             </T>
           </View>
           <T variant="h1" align="center" style={{ marginTop: px(24) }}>
-            {winner ? 'The story continues…' : choice.prompt}
+            {winner ? t('choice.continues') : choice.prompt}
           </T>
           <T variant="body" color={colors.muted} align="center" style={{ marginTop: px(10) }}>
-            {winner ? ' ' : 'Vote on your phone, or choose with the remote'}
+            {winner ? ' ' : t('choice.how')}
           </T>
         </View>
 
@@ -124,7 +126,7 @@ export function ChoiceOverlay({ story, choice, onDecided }: Props) {
                       <View style={styles.voteRow}>
                         <AvatarStack people={voters(opt.id)} size={px(40)} />
                         <T variant="bodyStrong" color={colors.gold}>
-                          {tally[opt.id]} {tally[opt.id] === 1 ? 'vote' : 'votes'}
+                          {t(tally[opt.id] === 1 ? 'choice.votes1' : 'choice.votes', { n: tally[opt.id] })}
                         </T>
                       </View>
                     </View>

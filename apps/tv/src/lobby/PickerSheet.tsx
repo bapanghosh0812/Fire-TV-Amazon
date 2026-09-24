@@ -8,14 +8,15 @@ import { StoryArt } from '../components/StoryArt';
 import { T } from '../components/Typography';
 import { HERO_PRESETS, SPARK_PRESETS, WORLD_PRESETS } from '../data/library';
 import { useBackHandler } from '../remote/hooks';
+import { useT, type StringKey } from '../i18n';
 import { colors, px, radius, safe } from '../theme/tokens';
 
 const native = Platform.OS !== 'web';
 
-const TITLES: Record<ThreadKind, { title: string; hint: string }> = {
-  hero: { title: 'Choose a hero', hint: 'Or draw your own on paper and snap it from your phone' },
-  world: { title: 'Where does it happen?', hint: 'Or say your own idea into your phone' },
-  spark: { title: 'What sparks the story?', hint: 'Or type something surprising on your phone' },
+const TITLES: Record<ThreadKind, { title: StringKey; hint: StringKey }> = {
+  hero: { title: 'picker.hero.title', hint: 'picker.hero.hint' },
+  world: { title: 'picker.world.title', hint: 'picker.world.hint' },
+  spark: { title: 'picker.spark.title', hint: 'picker.spark.hint' },
 };
 
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function PickerSheet({ kind, onPick, onClose }: Props) {
+  const t = useT();
   const slide = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -38,20 +40,18 @@ export function PickerSheet({ kind, onPick, onClose }: Props) {
 
   const translateY = slide.interpolate({ inputRange: [0, 1], outputRange: [px(420), 0] });
 
+  // Presets are shown (and sent to the story writer) in the family's language.
   const items =
     kind === 'hero'
-      ? HERO_PRESETS.map((h) => ({
-          id: h.id,
-          label: h.name,
-          sub: h.description,
-          thread: { kind: 'hero', by: 'tv', name: h.name, description: h.description, presetId: h.id } as Thread,
-        }))
-      : (kind === 'world' ? WORLD_PRESETS : SPARK_PRESETS).map((w) => ({
-          id: w.id,
-          label: w.text.charAt(0).toUpperCase() + w.text.slice(1),
-          sub: '',
-          thread: { kind, by: 'tv', text: w.text, presetId: w.id } as Thread,
-        }));
+      ? HERO_PRESETS.map((h) => {
+          const name = t(`preset.${h.id}.name` as StringKey);
+          const description = t(`preset.${h.id}.desc` as StringKey);
+          return { id: h.id, label: name, sub: description, thread: { kind: 'hero', by: 'tv', name, description, presetId: h.id } as Thread };
+        })
+      : (kind === 'world' ? WORLD_PRESETS : SPARK_PRESETS).map((w) => {
+          const text = t(`${kind}.${w.id}` as StringKey);
+          return { id: w.id, label: text.charAt(0).toUpperCase() + text.slice(1), sub: '', thread: { kind, by: 'tv', text, presetId: w.id } as Thread };
+        });
 
   return (
     <SpatialNavigationRoot isActive>
@@ -60,9 +60,9 @@ export function PickerSheet({ kind, onPick, onClose }: Props) {
         <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
           <LinearGradient colors={[colors.surface, colors.ink]} style={StyleSheet.absoluteFill} />
           <View style={styles.head}>
-            <T variant="h1">{TITLES[kind].title}</T>
+            <T variant="h1">{t(TITLES[kind].title)}</T>
             <T variant="body" color={colors.muted}>
-              {TITLES[kind].hint}
+              {t(TITLES[kind].hint)}
             </T>
           </View>
           <SpatialNavigationScrollView horizontal offsetFromStart={safe.x} style={{ flex: 0 }}>

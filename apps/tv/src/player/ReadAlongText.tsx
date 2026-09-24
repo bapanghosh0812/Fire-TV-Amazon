@@ -32,10 +32,11 @@ export const ReadAlongText = memo(function ReadAlongText({ text, marks, activeIn
         return (
           <Text
             key={i}
+            // Android keeps a nested span's old background unless it is explicitly reset.
             style={
               isActive
                 ? { color: colors.night, backgroundColor: colors.gold }
-                : { color: isRead ? colors.parchment : 'rgba(247,241,227,0.62)' }
+                : { color: isRead ? colors.parchment : 'rgba(247,241,227,0.62)', backgroundColor: 'transparent' }
             }
           >
             {isActive ? `${tok.text}` : tok.text}

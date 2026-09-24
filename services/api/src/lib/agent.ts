@@ -5,7 +5,7 @@ import { env } from './env';
 const client = new BedrockAgentCoreClient({});
 
 export type AgentTask =
-  | { task: 'hero'; roomId: string; householdId: string; playerId: string; drawingKey: string; name: string; ageBand: string }
+  | { task: 'hero'; roomId: string; householdId: string; playerId: string; drawingKey: string; name: string; ageBand: string; language: string }
   | {
       task: 'weave';
       storyId: string;

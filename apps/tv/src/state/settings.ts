@@ -3,6 +3,15 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import type { AgeBand } from '@storyloom/protocol';
 import type { SkyMode } from '../components/sky/phases';
+import { matchLanguage } from '@storyloom/protocol';
+
+function deviceLanguage() {
+  try {
+    return matchLanguage(Intl.DateTimeFormat().resolvedOptions().locale);
+  } catch {
+    return matchLanguage(undefined);
+  }
+}
 
 export interface Settings {
   ageBand: AgeBand;
@@ -14,6 +23,7 @@ export interface Settings {
   narrator: string;
   onboarded: boolean;
   skyMode: SkyMode;
+  language: string; // menus + default story language (BCP-47)
 }
 
 interface SettingsStore extends Settings {
@@ -38,6 +48,7 @@ const defaults: Settings = {
   narrator: 'Ruth',
   onboarded: false,
   skyMode: 'auto',
+  language: deviceLanguage(),
 };
 
 // SecureStore is native-only; the web preview keeps values in memory.

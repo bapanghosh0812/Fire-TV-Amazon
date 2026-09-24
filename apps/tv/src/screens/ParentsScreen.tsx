@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { DefaultFocus, SpatialNavigationRoot, SpatialNavigationView } from 'react-tv-space-navigation';
-import type { AgeBand } from '@storyloom/protocol';
+import {
+  DefaultFocus,
+  SpatialNavigationRoot,
+  SpatialNavigationScrollView,
+  SpatialNavigationView,
+} from 'react-tv-space-navigation';
+import { languageInfo, type AgeBand } from '@storyloom/protocol';
+import { SkyBackdrop } from '../components/sky/SkyBackdrop';
 import { Focusable } from '../components/Focusable';
 import { Icon, IconName } from '../components/Icon';
+import { LanguageSheet } from '../components/LanguageSheet';
 import { Pill } from '../components/Pill';
 import { T } from '../components/Typography';
 import { useSettings } from '../state/settings';
+import { useT, type StringKey } from '../i18n';
 import { colors, fonts, px, radius, safe } from '../theme/tokens';
 import type { RootStackParamList } from '../navigation/types';
 
@@ -19,16 +26,31 @@ export function ParentsScreen(_: Props) {
   const isFocused = useIsFocused();
   const pinSet = useSettings((s) => s.pinSet);
   const [unlocked, setUnlocked] = useState(false);
+  const [choosingLanguage, setChoosingLanguage] = useState(false);
 
   useEffect(() => {
     useSettings.getState().hydrate();
   }, []);
 
   return (
-    <SpatialNavigationRoot isActive={isFocused}>
+    <SpatialNavigationRoot isActive={isFocused && !choosingLanguage}>
       <View style={styles.screen}>
-        <LinearGradient colors={['#130F33', colors.night]} style={StyleSheet.absoluteFill} />
-        {unlocked ? <SettingsPanel /> : <PinGate mode={pinSet ? 'enter' : 'create'} onUnlocked={() => setUnlocked(true)} />}
+        <SkyBackdrop scrim="center" />
+        {unlocked ? (
+          <SettingsPanel onChooseLanguage={() => setChoosingLanguage(true)} />
+        ) : (
+          <PinGate mode={pinSet ? 'enter' : 'create'} onUnlocked={() => setUnlocked(true)} />
+        )}
+        {choosingLanguage ? (
+          <LanguageSheet
+            selected={useSettings.getState().language}
+            onClose={() => setChoosingLanguage(false)}
+            onPick={(code) => {
+              useSettings.getState().update({ language: code });
+              setChoosingLanguage(false);
+            }}
+          />
+        ) : null}
       </View>
     </SpatialNavigationRoot>
   );
@@ -37,17 +59,13 @@ export function ParentsScreen(_: Props) {
 // ---------------------------------------------------------------------------
 
 function PinGate({ mode, onUnlocked }: { mode: 'enter' | 'create'; onUnlocked: () => void }) {
+  const t = useT();
   const [pin, setPin] = useState('');
   const [first, setFirst] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  const title = mode === 'enter' ? 'Parents only' : first ? 'Type it once more' : 'Create a parent PIN';
-  const sub =
-    mode === 'enter'
-      ? 'Enter your 4-digit PIN to open settings'
-      : first
-        ? 'Just to be sure'
-        : 'Keeps safety and privacy settings grown-ups only';
+  const title = mode === 'enter' ? t('parents.pinTitle') : first ? t('parents.againTitle') : t('parents.createTitle');
+  const sub = mode === 'enter' ? t('parents.pinSub') : first ? t('parents.againSub') : t('parents.createSub');
 
   async function press(key: string) {
     setError('');
@@ -59,7 +77,7 @@ function PinGate({ mode, onUnlocked }: { mode: 'enter' | 'create'; onUnlocked: (
     if (mode === 'enter') {
       if (await s.checkPin(next)) onUnlocked();
       else {
-        setError('That PIN didn’t match. Try again.');
+        setError(t('parents.wrong'));
         setPin('');
       }
     } else if (!first) {
@@ -69,7 +87,7 @@ function PinGate({ mode, onUnlocked }: { mode: 'enter' | 'create'; onUnlocked: (
       await s.setPin(next);
       onUnlocked();
     } else {
-      setError('Those didn’t match. Let’s start again.');
+      setError(t('parents.mismatch'));
       setFirst(null);
       setPin('');
     }
@@ -132,56 +150,73 @@ function PinGate({ mode, onUnlocked }: { mode: 'enter' | 'create'; onUnlocked: (
 
 // ---------------------------------------------------------------------------
 
-const AGES: { id: AgeBand; label: string }[] = [
-  { id: 'little', label: '3–5 years' },
-  { id: 'kid', label: '6–8 years' },
-  { id: 'big-kid', label: '9–11 years' },
+const AGES: { id: AgeBand; label: StringKey }[] = [
+  { id: 'little', label: 'parents.age.little' },
+  { id: 'kid', label: 'parents.age.kid' },
+  { id: 'big-kid', label: 'parents.age.big' },
 ];
 
-function SettingsPanel() {
+function SettingsPanel({ onChooseLanguage }: { onChooseLanguage: () => void }) {
+  const t = useT();
   const s = useSettings();
   return (
     <View style={styles.panel}>
-      <T variant="overline" color={colors.gold}>
-        PARENTS
-      </T>
-      <T variant="h1" style={{ marginBottom: px(30) }}>
-        Safety, privacy & bedtime
-      </T>
-      <SpatialNavigationView direction="vertical" style={{ gap: px(22) }}>
-        <Section icon="family" title="Age of our listeners" note="Stories, words and themes adapt to this age.">
-          {AGES.map((a, i) => {
-            const pill = <Pill key={a.id} label={a.label} selected={s.ageBand === a.id} onSelect={() => s.update({ ageBand: a.id })} />;
-            return i === 0 ? <DefaultFocus key={a.id}>{pill}</DefaultFocus> : pill;
-          })}
-        </Section>
-        <Section icon="shield" title="Gentle stories" note="No villains, scary moments or peril. Every story passes an AI safety check either way.">
-          <Pill label="On" selected={s.gentleMode} onSelect={() => s.update({ gentleMode: true })} />
-          <Pill label="Off" selected={!s.gentleMode} onSelect={() => s.update({ gentleMode: false })} />
-        </Section>
-        <Section icon="moon" title="Bedtime mode" note="Softer voice, warmer and dimmer screen, and the story winds down to sleep.">
-          <Pill label="On" selected={s.bedtimeMode} onSelect={() => s.update({ bedtimeMode: true })} />
-          <Pill label="Off" selected={!s.bedtimeMode} onSelect={() => s.update({ bedtimeMode: false })} />
-          <View style={styles.sep} />
-          {[0, 15, 30].map((m) => (
-            <Pill key={m} label={m ? `Sleep in ${m} min` : 'No timer'} selected={s.sleepTimerMin === m} onSelect={() => s.update({ sleepTimerMin: m })} />
-          ))}
-        </Section>
-        <Section icon="clock" title="Daily story time" note="A gentle goodbye screen appears when time is up.">
-          {[0, 30, 45, 60].map((m) => (
-            <Pill key={m} label={m ? `${m} min` : 'No limit'} selected={s.dailyLimitMin === m} onSelect={() => s.update({ dailyLimitMin: m })} />
-          ))}
-        </Section>
-        <Section icon="sparkle" title="The sky" note="Follows the real time of day: sun by day, moon and stars at night. Or pick one.">
-          <Pill label="Auto" selected={s.skyMode === 'auto'} onSelect={() => s.update({ skyMode: 'auto' })} />
-          <Pill label="Day" selected={s.skyMode === 'day'} onSelect={() => s.update({ skyMode: 'day' })} />
-          <Pill label="Night" selected={s.skyMode === 'night'} onSelect={() => s.update({ skyMode: 'night' })} />
-        </Section>
-        <Section icon="trash" title="Children’s drawings" note="By default, photos of drawings are deleted within 24 hours. Only the illustrated hero is kept.">
-          <Pill label="Delete after 24h" selected={!s.keepDrawings} onSelect={() => s.update({ keepDrawings: false })} />
-          <Pill label="Keep with the story" selected={s.keepDrawings} onSelect={() => s.update({ keepDrawings: true })} />
-        </Section>
-      </SpatialNavigationView>
+      <View style={styles.panelHead}>
+        <T variant="overline" color={colors.gold}>
+          {t('parents.overline')}
+        </T>
+        <T variant="h1">{t('parents.title')}</T>
+      </View>
+      <SpatialNavigationScrollView offsetFromStart={px(200)} style={{ flex: 1 }}>
+        <SpatialNavigationView direction="vertical" style={styles.sections}>
+          <Section icon="family" title={t('parents.age')} note={t('parents.ageNote')}>
+            {AGES.map((a, i) => {
+              const pill = <Pill key={a.id} label={t(a.label)} selected={s.ageBand === a.id} onSelect={() => s.update({ ageBand: a.id })} />;
+              return i === 0 ? <DefaultFocus key={a.id}>{pill}</DefaultFocus> : pill;
+            })}
+          </Section>
+          <Section icon="globe" title={t('parents.language')} note={t('parents.languageNote')}>
+            <Pill label={languageInfo(s.language).native} icon="globe" selected onSelect={onChooseLanguage} />
+          </Section>
+          <Section icon="shield" title={t('parents.gentle')} note={t('parents.gentleNote')}>
+            <Pill label={t('common.on')} selected={s.gentleMode} onSelect={() => s.update({ gentleMode: true })} />
+            <Pill label={t('common.off')} selected={!s.gentleMode} onSelect={() => s.update({ gentleMode: false })} />
+          </Section>
+          <Section icon="moon" title={t('parents.bedtime')} note={t('parents.bedtimeNote')}>
+            <Pill label={t('common.on')} selected={s.bedtimeMode} onSelect={() => s.update({ bedtimeMode: true })} />
+            <Pill label={t('common.off')} selected={!s.bedtimeMode} onSelect={() => s.update({ bedtimeMode: false })} />
+            <View style={styles.sep} />
+            {[0, 15, 30].map((m) => (
+              <Pill
+                key={m}
+                label={m ? t('parents.sleepIn', { n: m }) : t('parents.noTimer')}
+                selected={s.sleepTimerMin === m}
+                onSelect={() => s.update({ sleepTimerMin: m })}
+              />
+            ))}
+          </Section>
+          <Section icon="clock" title={t('parents.daily')} note={t('parents.dailyNote')}>
+            {[0, 30, 45, 60].map((m) => (
+              <Pill
+                key={m}
+                label={m ? t('parents.minutes', { n: m }) : t('parents.noLimit')}
+                selected={s.dailyLimitMin === m}
+                onSelect={() => s.update({ dailyLimitMin: m })}
+              />
+            ))}
+          </Section>
+          <Section icon="sparkle" title={t('parents.sky')} note={t('parents.skyNote')}>
+            <Pill label={t('parents.skyAuto')} selected={s.skyMode === 'auto'} onSelect={() => s.update({ skyMode: 'auto' })} />
+            <Pill label={t('parents.skyDay')} selected={s.skyMode === 'day'} onSelect={() => s.update({ skyMode: 'day' })} />
+            <Pill label={t('parents.skyNight')} selected={s.skyMode === 'night'} onSelect={() => s.update({ skyMode: 'night' })} />
+          </Section>
+          <Section icon="trash" title={t('parents.drawings')} note={t('parents.drawingsNote')}>
+            <Pill label={t('parents.delete24')} selected={!s.keepDrawings} onSelect={() => s.update({ keepDrawings: false })} />
+            <Pill label={t('parents.keep')} selected={s.keepDrawings} onSelect={() => s.update({ keepDrawings: true })} />
+          </Section>
+          <View style={{ height: px(160) }} />
+        </SpatialNavigationView>
+      </SpatialNavigationScrollView>
     </View>
   );
 }
@@ -229,14 +264,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   keyText: { fontFamily: fonts.display, fontSize: px(48), lineHeight: px(58), color: colors.parchment },
-  panel: { flex: 1, paddingHorizontal: safe.x, paddingTop: safe.y + px(10) },
+  panel: { flex: 1 },
+  panelHead: { paddingHorizontal: safe.x, paddingTop: safe.y + px(10), paddingBottom: px(24), gap: px(6) },
+  sections: { gap: px(22), paddingHorizontal: safe.x, paddingTop: px(8) },
   section: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: px(28),
     padding: px(26),
     borderRadius: radius.lg,
-    backgroundColor: 'rgba(23,20,58,0.7)',
+    backgroundColor: 'rgba(23,20,58,0.78)',
   },
   sectionIcon: {
     width: px(70),

@@ -7,10 +7,15 @@ export interface Token {
   isWord: boolean;
 }
 
-/** Splits page text into words and the spaces/punctuation between them. */
+/**
+ * Splits page text into words and the spaces/punctuation between them.
+ * Script-agnostic (must match the narrator's rule on the server): a word is any
+ * run without spaces or punctuation, so Hindi vowel signs stay inside their
+ * word and Japanese/Chinese highlight phrase by phrase.
+ */
 export function tokenize(text: string): Token[] {
   const tokens: Token[] = [];
-  const re = /[\p{L}\p{N}’'-]+/gu;
+  const re = /[^\s.,!?…;:"“”()[\]{}—–、，。！？：；「」『』《》।॥،؟؛]+/gu;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
@@ -36,8 +41,8 @@ export function buildTimeline(text: string, marks?: WordMark[]): { marks: WordMa
   let t = 300;
   for (const tok of tokenize(text)) {
     if (!tok.isWord) {
-      if (/[.!?…]/.test(tok.text)) t += 520;
-      else if (/[,;:—–]/.test(tok.text)) t += 240;
+      if (/[.!?…。！？।؟]/.test(tok.text)) t += 520;
+      else if (/[,;:—–、，،؛]/.test(tok.text)) t += 240;
       continue;
     }
     out.push({ t, s: tok.start, e: tok.end });

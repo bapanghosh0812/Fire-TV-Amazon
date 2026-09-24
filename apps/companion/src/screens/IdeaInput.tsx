@@ -1,29 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from '../lib/session';
 import { listen, speechSupported } from '../lib/speech';
+import { ideas, t } from '../i18n';
 import { Icon } from '../ui';
-
-const COPY = {
-  world: {
-    title: 'Where does it happen?',
-    body: 'Say it out loud or type it. Anywhere at all!',
-    placeholder: 'A lighthouse on the moon…',
-    ideas: ['an underwater bakery', 'a castle made of clouds', 'a jungle of giant flowers', 'a train that travels to the stars', 'grandma’s garden at night'],
-  },
-  spark: {
-    title: 'What sparks the story?',
-    body: 'A problem, a wish or a big surprise.',
-    placeholder: 'The moon lost its glow…',
-    ideas: ['a lost treasure map', 'a new friend who is very different', 'a storm is coming', 'a surprise birthday party', 'a door that wasn’t there yesterday'],
-  },
-} as const;
 
 export function IdeaInput({ kind, onDone }: { kind: 'world' | 'spark'; onDone: () => void }) {
   const { send, flash } = useSession();
   const [text, setText] = useState('');
   const [live, setLive] = useState(false);
   const stop = useRef<() => void>(undefined);
-  const copy = COPY[kind];
   const canSpeak = speechSupported();
 
   useEffect(() => () => stop.current?.(), []);
@@ -35,10 +20,10 @@ export function IdeaInput({ kind, onDone }: { kind: 'world' | 'spark'; onDone: (
     }
     setLive(true);
     stop.current = listen(
-      (t) => setText(t),
+      (said) => setText(said),
       (err) => {
         setLive(false);
-        if (err && err !== 'no-speech' && err !== 'aborted') flash('Couldn’t hear that. You can type instead.');
+        if (err && err !== 'no-speech' && err !== 'aborted') flash(t('cantHear'));
       },
     );
   }
@@ -48,36 +33,42 @@ export function IdeaInput({ kind, onDone }: { kind: 'world' | 'spark'; onDone: (
     if (!v) return;
     send({ action: 'thread.set', thread: { kind, by: '', text: v.slice(0, 140) } });
     if ('vibrate' in navigator) navigator.vibrate?.(20);
-    flash('Sent to the TV ✨');
+    flash(t('sent'));
     onDone();
   }
 
   return (
     <div className="stack fade-in" style={{ flex: 1 }}>
       <button className="back" onClick={onDone}>
-        <Icon name="left" size={18} /> Back
+        <Icon name="left" size={18} /> {t('back')}
       </button>
       <div>
-        <div className="overline">The {kind}</div>
-        <h1 className="h1">{copy.title}</h1>
-        <p className="body">{copy.body}</p>
+        <div className="overline">{t(kind)}</div>
+        <h1 className="h1">{t(kind === 'world' ? 'worldTitle' : 'sparkTitle')}</h1>
+        <p className="body">{t(kind === 'world' ? 'worldBody' : 'sparkBody')}</p>
       </div>
 
       {canSpeak ? (
         <>
-          <button className={`mic ${live ? 'live' : ''}`} onClick={toggleMic} aria-label={live ? 'Stop listening' : 'Speak your idea'}>
+          <button className={`mic ${live ? 'live' : ''}`} onClick={toggleMic} aria-label={live ? t('listening') : t('tapSpeak')}>
             <Icon name="mic" size={40} />
           </button>
           <p className="small center" style={{ marginTop: -4 }}>
-            {live ? 'Listening… tap to stop' : 'Tap and speak'}
+            {live ? t('listening') : t('tapSpeak')}
           </p>
         </>
       ) : null}
 
-      <textarea className="field" placeholder={copy.placeholder} value={text} maxLength={140} onChange={(e) => setText(e.target.value)} />
+      <textarea
+        className="field"
+        placeholder={t(kind === 'world' ? 'worldPlaceholder' : 'sparkPlaceholder')}
+        value={text}
+        maxLength={140}
+        onChange={(e) => setText(e.target.value)}
+      />
 
       <div className="chips">
-        {copy.ideas.map((idea) => (
+        {ideas(kind).map((idea) => (
           <button key={idea} className="chip" onClick={() => submit(idea)}>
             {idea}
           </button>
@@ -86,7 +77,7 @@ export function IdeaInput({ kind, onDone }: { kind: 'world' | 'spark'; onDone: (
 
       <div className="spacer" />
       <button className="btn" disabled={!text.trim()} onClick={() => submit()}>
-        Send to the TV <Icon name="send" size={18} />
+        {t('send')} <Icon name="send" size={18} />
       </button>
     </div>
   );

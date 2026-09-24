@@ -16,7 +16,9 @@ function localCode() {
 
 export async function openRoom() {
   const room = useRoom.getState();
+  const { mood, length, language } = room; // chosen before the room opens (starter card, family language)
   room.reset();
+  room.setRoom({ mood, length, language });
   if (isOfflineDemo) {
     const code = localCode();
     room.setRoom({ roomId: `local-${code}`, code, joinUrl: `${config.companionBaseUrl}/j/${code}` });
@@ -64,11 +66,11 @@ function startLocalWeave(): string {
   weave.begin(storyId);
 
   const steps: [number, Parameters<typeof weave.progress>][] = [
-    [900, ['plan', 'Planning the adventure…', 0.12]],
-    [2200, ['write', 'Writing page by page…', 0.3]],
-    [3600, ['paint', 'Painting the pictures…', 0.55]],
-    [5200, ['voice', 'Recording the narrator…', 0.78]],
-    [6400, ['safety', 'Checking it’s just right for little ears…', 0.92]],
+    [900, ['plan', 'plan', 0.12]],
+    [2000, ['safety', 'safety', 0.24]],
+    [3000, ['write', 'write', 0.38]],
+    [4300, ['paint', 'paint', 0.62]],
+    [5900, ['voice', 'voice', 0.86]],
   ];
   steps.forEach(([ms, args]) => setTimeout(() => useWeave.getState().progress(...args), ms));
 

@@ -11,6 +11,7 @@ import type {
 import { isPreviewMode, loadConfig, joinRoom, requestUpload, submitHero, uploadDrawing } from './api';
 import { prepareDrawing } from './image';
 import { RoomSocket } from './transport';
+import { t } from '../i18n';
 
 export type Phase = 'join' | 'studio' | 'weaving' | 'reading' | 'vote' | 'end';
 
@@ -170,11 +171,11 @@ function applyEvent(e: RoomEvent) {
       socket?.close();
       socket = undefined;
       set({ phase: 'join', room: undefined, me: undefined, token: undefined, connected: false });
-      get().flash('The story room on the TV has closed. Scan the new code to join again.');
+      get().flash(t('roomClosed'));
       break;
     case 'story.failed':
       set({ phase: 'studio' });
-      get().flash('The loom got tangled. Please try again.');
+      get().flash(t('tangled'));
       break;
     case 'error':
       get().flash(e.message);

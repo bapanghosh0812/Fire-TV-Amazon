@@ -11,7 +11,7 @@ import logging
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from . import director, guardian, illustrator, memory, narrator
+from . import director, guardian, illustrator, languages, memory, narrator
 from .events import Room
 from .models import PagePlan, StoryPlan
 from .signing import sign_story
@@ -37,6 +37,7 @@ def _plan(job: dict, room: Room, story_id: str) -> StoryPlan:
         gentle=bool(settings.get("gentleMode", True)),
         contributors=r.get("players", []),
         memory=memory.recall(job["householdId"], f"{hero.get('name', '')} {threads.get('world', {}).get('text', '')}"),
+        language=languages.info(r.get("language")).get("english"),
     )
     room.progress(story_id, "plan", "Planning the adventure…", 0.08)
     plan = director.plan_story(**kwargs)
@@ -61,7 +62,9 @@ def run(job: dict) -> None:
     r = job["room"]
     settings = job.get("settings", {})
     threads = r.get("threads", {})
-    voice = settings.get("narrator", "Ruth")
+    language = languages.info(r.get("language"))["code"]
+    # A parent's chosen English narrator applies to English stories; other languages use their native voice.
+    voice = settings.get("narrator") if language.startswith("en") else None
     base = f"stories/{story_id}"
     seed = int(uuid.UUID(story_id).hex[:8], 16)
 
@@ -103,7 +106,7 @@ def run(job: dict) -> None:
             return (name, put_media(f"{base}/{name}.jpg", jpg, "image/jpeg"))
 
         def voice_page(idx: int, branch: str | None, text: str) -> tuple[str, dict]:
-            mp3, marks, dur = narrator.narrate(text, voice)
+            mp3, marks, dur = narrator.narrate(text, language, voice)
             key = put_media(f"{page_key(idx, branch)}.mp3", mp3, "audio/mpeg")
             return ("audio", {"audioKey": key, "marks": marks, "durationMs": dur})
 
@@ -167,7 +170,8 @@ def run(job: dict) -> None:
             },
             "createdAt": now(),
             "contributors": r.get("players", []),
-            "narrator": voice,
+            "narrator": voice or languages.info(language)["voice"],
+            "language": language,
             "status": "ready",
         }
         save_story(household, story)

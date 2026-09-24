@@ -30,15 +30,22 @@ Safety rules (non-negotiable, this is for children):
 - If a thread is unsafe or unclear, gently reinterpret it into something wholesome that keeps the child's intent.
 
 Illustration briefs describe only visuals (characters, action, setting, light, framing). Never ask for words,
-letters, captions, speech bubbles or signs inside pictures."""
+letters, captions, speech bubbles or signs inside pictures.
+
+Languages: write everything the family reads or hears (title, summary, hero_name, page text, choice prompt and
+options, lesson) natively in the requested language, with natural idioms, rhythm and culturally familiar details for
+a child who speaks it. Always write `scene`, `hero_look` and `art_style` in English, because they go to the
+illustrator."""
 
 
 def director_prompt(*, hero: dict, world: dict, spark: dict | None, mood: str, age_band: str, length: str,
-                    gentle: bool, contributors: list[dict], memory: list[str]) -> str:
+                    gentle: bool, contributors: list[dict], memory: list[str], language: str = "American English") -> str:
     who = {c["id"]: c["name"] for c in contributors}
     by = lambda t: who.get((t or {}).get("by"), "the family")  # noqa: E731
     counts = {"short": (3, 2), "medium": (4, 3)}[length if length in ("short", "medium") else "short"]
     lines = [
+        f"Story language: {language}. (Threads below may be in any language; understand them and write in {language}.)",
+        "",
         f"Hero thread (from {by(hero)}): {hero.get('name') or 'unnamed'} - {hero.get('description') or ''}",
         f"World thread (from {by(world)}): {world.get('text')}",
         f"Spark thread (from {by(spark)}): {spark.get('text')}" if spark and spark.get("text") else
@@ -62,4 +69,5 @@ def director_prompt(*, hero: dict, world: dict, spark: dict | None, mood: str, a
 HERO_SYSTEM = """You look at a photo a child took of their own drawing and describe the character they drew so a
 picture-book illustrator can bring it to life faithfully. Respect the child's design choices exactly (colours, number of
 eyes or legs, accessories), just describe them clearly. Be warm and never critical. If the photo is not a drawing,
-say so in the flags."""
+say so in the flags. Write `suggested_name` and `description` in the family's language; always write
+`visual_prompt` in English."""

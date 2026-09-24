@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import type { ThreadKind } from '@storyloom/protocol';
+import { languageInfo, type ThreadKind } from '@storyloom/protocol';
 import { previewPlay, useSession } from '../lib/session';
 import { isPreviewMode } from '../lib/api';
+import { t, type Key } from '../i18n';
 import { Avatar, Brand, Icon } from '../ui';
 import { HeroCapture } from './HeroCapture';
 import { IdeaInput } from './IdeaInput';
 
-const TASKS: { kind: ThreadKind; title: string; ask: string; icon: 'brush' | 'globe' | 'bolt' }[] = [
-  { kind: 'hero', title: 'The hero', ask: 'Draw a hero on paper and snap it', icon: 'brush' },
-  { kind: 'world', title: 'The world', ask: 'Where does the story happen?', icon: 'globe' },
-  { kind: 'spark', title: 'The spark', ask: 'A problem, a wish or a surprise', icon: 'bolt' },
+const TASKS: { kind: ThreadKind; title: Key; ask: Key; icon: 'brush' | 'globe' | 'bolt' }[] = [
+  { kind: 'hero', title: 'hero', ask: 'heroAsk', icon: 'brush' },
+  { kind: 'world', title: 'world', ask: 'worldAsk', icon: 'globe' },
+  { kind: 'spark', title: 'spark', ask: 'sparkAsk', icon: 'bolt' },
 ];
 
 export function Studio() {
@@ -27,46 +28,52 @@ export function Studio() {
       <div className="topbar">
         <Brand />
         <span className={`status ${connected ? '' : 'off'}`}>
-          <i /> {connected ? `ROOM ${room.code}` : 'RECONNECTING'}
+          <i /> {connected ? t('room', { code: room.code }) : t('reconnecting')}
         </span>
       </div>
 
       <div>
-        <div className="overline">Hi {me.name}</div>
-        <h1 className="h1">Add your thread</h1>
-        <p className="body">Pick anything below. Everyone’s ideas appear on the TV straight away.</p>
+        <div className="overline">{t('hi', { name: me.name })}</div>
+        <h1 className="h1">{t('addThread')}</h1>
+        <p className="body">{t('addThreadBody')}</p>
       </div>
 
       <div className="players" aria-label="Who’s here">
         {room.players.map((p) => (
           <Avatar key={p.id} player={p} size={34} />
         ))}
-        <span className="small" style={{ marginLeft: 4 }}>
-          {room.players.length} {room.players.length === 1 ? 'person' : 'people'} weaving
+        <span className="small" style={{ marginInlineStart: 4 }}>
+          {t(room.players.length === 1 ? 'weaving1' : 'weavingN', { n: room.players.length })}
         </span>
       </div>
 
+      {room.language ? (
+        <span className="small" style={{ color: 'var(--muted)' }}>
+          🌐 {t('storyIn', { language: languageInfo(room.language).native })}
+        </span>
+      ) : null}
+
       <div className="stack" style={{ marginTop: 6 }}>
-        {TASKS.map((t) => {
-          const thread = room.threads[t.kind];
+        {TASKS.map((task) => {
+          const thread = room.threads[task.kind];
           const by = who(thread?.by);
           const value = thread ? (thread.kind === 'hero' ? thread.name : thread.text) : undefined;
           const img = thread?.kind === 'hero' ? (thread.portraitUrl ?? thread.drawingUrl) : undefined;
           return (
             <button
-              key={t.kind}
+              key={task.kind}
               className={`card task ${thread ? 'done' : ''}`}
               style={{ ['--thread' as string]: by?.color }}
-              onClick={() => setOpen(t.kind)}
+              onClick={() => setOpen(task.kind)}
             >
               <span className="thread" />
-              <span className="icon">{img ? <img src={img} alt="" /> : <Icon name={t.icon} size={26} />}</span>
+              <span className="icon">{img ? <img src={img} alt="" /> : <Icon name={task.icon} size={26} />}</span>
               <span className="label">
                 <span className="overline" style={{ color: thread ? 'var(--gold)' : 'var(--dim)' }}>
-                  {t.title}
+                  {t(task.title)}
                 </span>
-                {value ? <div className="value">{value}</div> : <div className="ask">{t.ask}</div>}
-                {by ? <div className="small">added by {thread?.by === me.id ? 'you' : by.name}</div> : null}
+                {value ? <div className="value">{value}</div> : <div className="ask">{t(task.ask)}</div>}
+                {by ? <div className="small">{t('addedBy', { name: thread?.by === me.id ? t('you') : by.name })}</div> : null}
               </span>
               <span className="chev">
                 <Icon name={thread ? 'check' : 'right'} size={22} color={thread ? 'var(--teal)' : undefined} />
@@ -80,7 +87,7 @@ export function Studio() {
       <div className="card row" style={{ gap: 12 }}>
         <Icon name="tv" size={26} color="var(--gold)" />
         <p className="small" style={{ margin: 0, color: 'var(--muted)' }}>
-          When the hero and world are set, press <b style={{ color: 'var(--parchment)' }}>Start weaving</b> on the TV.
+          {t('tvHint')}
         </p>
       </div>
       {isPreviewMode() ? (

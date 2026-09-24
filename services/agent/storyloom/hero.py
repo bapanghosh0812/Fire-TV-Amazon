@@ -6,7 +6,7 @@ import uuid
 from strands import Agent
 from strands.models import BedrockModel
 
-from . import illustrator, memory
+from . import illustrator, languages, memory
 from .config import REGION, VISION_MODEL, client
 from .events import Room
 from .models import HeroSheet
@@ -34,7 +34,7 @@ def screen(image: bytes) -> str | None:
     return None
 
 
-def describe(image: bytes, name_hint: str) -> HeroSheet:
+def describe(image: bytes, name_hint: str, language: str) -> HeroSheet:
     agent = Agent(
         model=BedrockModel(model_id=VISION_MODEL, region_name=REGION, temperature=0.3, max_tokens=800),
         system_prompt=HERO_SYSTEM,
@@ -44,6 +44,7 @@ def describe(image: bytes, name_hint: str) -> HeroSheet:
     prompt = [
         {"image": {"format": "jpeg", "source": {"bytes": image}}},
         {"text": f"The child named their hero: {name_hint!r}." if name_hint else "The child didn't name their hero yet."},
+        {"text": f"The family's language is {languages.info(language)['english']}."},
     ]
     return agent(prompt, structured_output_model=HeroSheet).structured_output
 
@@ -59,7 +60,7 @@ def run(job: dict) -> None:
             room.emit({"type": "thread.clear", "kind": "hero"})
             return
 
-        sheet = describe(drawing, job.get("name") or "")
+        sheet = describe(drawing, job.get("name") or "", job.get("language") or languages.DEFAULT)
         if sheet.looks_like_real_person and not sheet.is_drawing:
             room.emit({"type": "error", "message": "That looks like a photo of a person. Please snap a drawing instead!"})
             room.emit({"type": "thread.clear", "kind": "hero"})

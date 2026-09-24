@@ -10,13 +10,14 @@ import {
   SpatialNavigationView,
 } from 'react-tv-space-navigation';
 import type { Story } from '@storyloom/protocol';
+import { useT, type StringKey } from '../i18n';
 import { Button } from '../components/Button';
 import { Focusable } from '../components/Focusable';
 import { Icon, IconName } from '../components/Icon';
 import { Logo } from '../components/Logo';
 import { AvatarStack } from '../components/Avatar';
-import { CrossfadeArt, StoryArt } from '../components/StoryArt';
-import { Starfield } from '../components/Starfield';
+import { StoryArt } from '../components/StoryArt';
+import { SkyBackdrop } from '../components/sky/SkyBackdrop';
 import { T } from '../components/Typography';
 import { STARTERS } from '../data/library';
 import { useLibrary } from '../state/library';
@@ -28,13 +29,6 @@ type FocusInfo = { kind: 'story'; id: string } | { kind: 'starter'; id: string }
 
 const native = Platform.OS !== 'web';
 
-const MOOD_LABEL: Record<Story['mood'], string> = {
-  cozy: 'Cozy bedtime',
-  adventure: 'Adventure',
-  silly: 'Silly',
-  curious: 'Learn & wonder',
-};
-
 // Vertical rhythm (1080p design units). The info panel is fixed; everything
 // focusable below it scrolls inside a clipped "shelf" area.
 const SHELF_TOP = px(610);
@@ -42,6 +36,7 @@ const SHELF_OFFSET = px(80);
 
 export function HomeScreen({ navigation }: Props) {
   const isFocused = useIsFocused();
+  const t = useT();
   const stories = useLibrary((s) => s.stories);
   const [info, setInfo] = useState<FocusInfo>({ kind: 'story', id: stories[0]?.id });
   const [inShelf, setInShelf] = useState(false);
@@ -60,50 +55,42 @@ export function HomeScreen({ navigation }: Props) {
     Animated.timing(actionsOpacity, { toValue: inShelf ? 0 : 1, duration: 260, useNativeDriver: native }).start();
   }, [inShelf, actionsOpacity]);
 
-  const artSeed = starter ? `starter-${starter.id}` : (story?.id ?? 'home');
-  const artPalette = starter ? starter.palette : story?.palette;
-
   return (
     <SpatialNavigationRoot isActive={isFocused}>
       <View style={styles.screen}>
-        {/* Backdrop */}
-        <View style={styles.backdrop}>
-          <CrossfadeArt seed={artSeed} uri={starter ? undefined : story?.coverUrl} palette={artPalette} />
-          <LinearGradient
-            colors={['rgba(7,6,26,0.97)', 'rgba(7,6,26,0.78)', 'rgba(7,6,26,0.05)']}
-            locations={[0, 0.45, 0.9]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <LinearGradient colors={['rgba(7,6,26,0)', 'rgba(7,6,26,0.7)', colors.night]} locations={[0.3, 0.7, 1]} style={StyleSheet.absoluteFill} />
-        </View>
-        <Starfield density={40} />
+        {/* Living sky: sun by day, moon and stars by night */}
+        <SkyBackdrop scrim="left" />
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(4,6,24,0)', 'rgba(4,6,24,0.55)', 'rgba(4,6,24,0.85)']}
+          locations={[0.5, 0.75, 1]}
+          style={StyleSheet.absoluteFill}
+        />
 
         {/* Fixed info panel */}
         <View style={styles.info} pointerEvents="none">
           {starter ? (
             <>
               <T variant="overline" color={colors.gold}>
-                NEW STORY
+                {t('home.newStory')}
               </T>
               <T variant="hero" numberOfLines={2} style={styles.title}>
-                {starter.title}
+                {t(`starter.${starter.id}.title` as StringKey)}
               </T>
               <T variant="body" color={colors.muted} numberOfLines={2} style={styles.summary}>
                 {starter.id === 'draw'
-                  ? 'Grab paper and crayons. Draw any hero you like, snap it with your phone, and watch it come alive in your own story.'
-                  : `${starter.subtitle}. Everyone adds an idea from their phone, and Storyloom weaves it into an illustrated, narrated story.`}
+                  ? t('home.drawBody')
+                  : t('home.starterBody', { subtitle: t(`starter.${starter.id}.subtitle` as StringKey) })}
               </T>
               <View style={styles.meta}>
-                <Chip icon="phone" label="Join from any phone" />
-                <Chip icon="shield" label="Kid-safe by design" />
+                <Chip icon="phone" label={t('home.chipPhone')} />
+                <Chip icon="shield" label={t('home.chipSafe')} />
               </View>
             </>
           ) : story ? (
             <>
               <T variant="overline" color={colors.gold}>
-                {story.id === stories[0]?.id ? 'TONIGHT’S STORY' : 'FROM YOUR BOOKSHELF'}
+                {story.id === stories[0]?.id ? t('home.tonight') : t('home.fromShelf')}
               </T>
               <T variant="hero" numberOfLines={2} style={styles.title}>
                 {story.title}
@@ -112,12 +99,12 @@ export function HomeScreen({ navigation }: Props) {
                 {story.summary}
               </T>
               <View style={styles.meta}>
-                <Chip icon="sparkle" label={MOOD_LABEL[story.mood]} />
-                <Chip icon="book" label={`${new Set(story.pages.map((p) => p.index)).size} pages`} />
+                <Chip icon="sparkle" label={t(`mood.${story.mood}` as StringKey)} />
+                <Chip icon="book" label={t('home.pages', { n: new Set(story.pages.map((p) => p.index)).size || '·' })} />
                 <View style={styles.woven}>
                   <AvatarStack people={story.contributors} size={px(40)} />
                   <T variant="caption" color={colors.parchment}>
-                    Woven by {story.contributors.map((c) => c.name).join(', ')}
+                    {t('home.wovenBy', { names: story.contributors.map((c) => c.name).join(', ') })}
                   </T>
                 </View>
               </View>
@@ -129,7 +116,7 @@ export function HomeScreen({ navigation }: Props) {
           {/* Top bar */}
           <SpatialNavigationView direction="horizontal" style={styles.topBar}>
             <Logo />
-            <Button label="Parents" icon="lock" kind="quiet" onSelect={() => navigation.navigate('Parents')} onFocus={() => setInShelf(false)} />
+            <Button label={t('home.parents')} icon="lock" kind="quiet" onSelect={() => navigation.navigate('Parents')} onFocus={() => setInShelf(false)} />
           </SpatialNavigationView>
 
           {/* Shelf */}
@@ -139,7 +126,7 @@ export function HomeScreen({ navigation }: Props) {
                 <SpatialNavigationView direction="horizontal" style={styles.actions}>
                   <DefaultFocus>
                     <Button
-                      label="Read tonight"
+                      label={t('home.read')}
                       icon="play"
                       size="lg"
                       onSelect={() => story && readStory(story.id)}
@@ -149,11 +136,11 @@ export function HomeScreen({ navigation }: Props) {
                       }}
                     />
                   </DefaultFocus>
-                  <Button label="Weave a new story" icon="sparkle" kind="ghost" size="lg" onSelect={() => weave()} onFocus={() => setInShelf(false)} />
+                  <Button label={t('home.weave')} icon="sparkle" kind="ghost" size="lg" onSelect={() => weave()} onFocus={() => setInShelf(false)} />
                 </SpatialNavigationView>
               </Animated.View>
 
-              <Row title="Weave something new" hint="Everyone joins from their phone">
+              <Row title={t('home.rowNew')} hint={t('home.rowNewHint')}>
                 {STARTERS.map((s) => (
                   <Focusable
                     key={s.id}
@@ -164,12 +151,21 @@ export function HomeScreen({ navigation }: Props) {
                     }}
                     radius={radius.lg}
                   >
-                    {(focused) => <StarterCard title={s.title} subtitle={s.subtitle} icon={s.icon} palette={s.palette} seed={`starter-${s.id}`} focused={focused} />}
+                    {(focused) => (
+                      <StarterCard
+                        title={t(`starter.${s.id}.title` as StringKey)}
+                        subtitle={t(`starter.${s.id}.subtitle` as StringKey)}
+                        icon={s.icon}
+                        palette={s.palette}
+                        seed={`starter-${s.id}`}
+                        focused={focused}
+                      />
+                    )}
                   </Focusable>
                 ))}
               </Row>
 
-              <Row title="Family bookshelf" hint={`${stories.length} stories`}>
+              <Row title={t('home.rowShelf')} hint={t('home.stories', { n: stories.length })}>
                 {stories.map((st) => (
                   <Focusable
                     key={st.id}
@@ -180,7 +176,7 @@ export function HomeScreen({ navigation }: Props) {
                     }}
                     radius={radius.md}
                   >
-                    {(focused) => <BookCard story={st} focused={focused} />}
+                    {(focused) => <BookCard story={st} focused={focused} cta={t('home.readCta')} />}
                   </Focusable>
                 ))}
               </Row>
@@ -245,7 +241,7 @@ function StarterCard({ title, subtitle, icon, palette, seed, focused }: { title:
   );
 }
 
-function BookCard({ story, focused }: { story: Story; focused: boolean }) {
+function BookCard({ story, focused, cta }: { story: Story; focused: boolean; cta: string }) {
   return (
     <View style={styles.book}>
       <StoryArt seed={story.id} uri={story.coverUrl} palette={story.palette} shape="tall" />
@@ -261,7 +257,7 @@ function BookCard({ story, focused }: { story: Story; focused: boolean }) {
           ))}
           {focused ? (
             <T variant="caption" color={colors.gold} style={{ marginLeft: px(8) }}>
-              READ ›
+              {cta}
             </T>
           ) : null}
         </View>
@@ -273,7 +269,6 @@ function BookCard({ story, focused }: { story: Story; focused: boolean }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.night },
   fill: { flex: 1 },
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, height: px(900) },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',

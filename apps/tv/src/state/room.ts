@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Mood, Player, RoomState, StoryLength, Thread, ThreadKind } from '@storyloom/protocol';
+import { DEFAULT_LANGUAGE, type Mood, type Player, type RoomState, type StoryLength, type Thread, type ThreadKind } from '@storyloom/protocol';
 
 interface RoomStore {
   roomId?: string;
@@ -10,6 +10,7 @@ interface RoomStore {
   threads: Partial<Record<ThreadKind, Thread>>;
   mood: Mood;
   length: StoryLength;
+  language: string;
   votes: Record<string, 'a' | 'b'>;
   heroProcessing?: { by: string; drawingUrl: string };
   setRoom: (room: Partial<RoomState> & { joinUrl?: string }) => void;
@@ -20,6 +21,7 @@ interface RoomStore {
   clearThread: (k: ThreadKind) => void;
   setMood: (m: Mood) => void;
   setLength: (l: StoryLength) => void;
+  setLanguage: (code: string) => void;
   castVote: (playerId: string, option: 'a' | 'b') => void;
   resetVotes: () => void;
   setHeroProcessing: (v?: { by: string; drawingUrl: string }) => void;
@@ -35,6 +37,7 @@ const initial = {
   threads: {},
   mood: 'cozy' as Mood,
   length: 'short' as StoryLength,
+  language: DEFAULT_LANGUAGE,
   votes: {},
   heroProcessing: undefined,
 };
@@ -50,6 +53,7 @@ export const useRoom = create<RoomStore>((set) => ({
       threads: room.threads ?? s.threads,
       mood: room.mood ?? s.mood,
       length: room.length ?? s.length,
+      language: room.language ?? s.language,
     })),
   setConnected: (connected) => set({ connected }),
   addPlayer: (p) => set((s) => ({ players: [...s.players.filter((x) => x.id !== p.id), p] })),
@@ -63,6 +67,7 @@ export const useRoom = create<RoomStore>((set) => ({
     }),
   setMood: (mood) => set({ mood }),
   setLength: (length) => set({ length }),
+  setLanguage: (language) => set({ language }),
   castVote: (playerId, option) => set((s) => ({ votes: { ...s.votes, [playerId]: option } })),
   resetVotes: () => set({ votes: {} }),
   setHeroProcessing: (heroProcessing) => set({ heroProcessing }),

@@ -28,6 +28,8 @@ export function listen(onText: (text: string, final: boolean) => void, onDone: (
     return () => {};
   }
   const rec = new C();
+  // Listen in the speaker's own language (their phone's setting); the story
+  // writer understands ideas in any language.
   rec.lang = navigator.language || 'en-US';
   rec.interimResults = true;
   rec.continuous = false;

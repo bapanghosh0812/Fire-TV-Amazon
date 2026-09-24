@@ -38,6 +38,7 @@ export interface RoomItem {
   mood: RoomState['mood'];
   length: RoomState['length'];
   ageBand: RoomState['ageBand'];
+  language?: string;
   storyId?: string;
   votes?: Record<string, 'a' | 'b'>;
   createdAt: string;
@@ -180,9 +181,10 @@ export interface HouseholdSettings {
   gentleMode: boolean;
   narrator: string;
   keepDrawings: boolean;
+  language?: string;
 }
 
-export const DEFAULT_SETTINGS: HouseholdSettings = { ageBand: 'kid', gentleMode: true, narrator: 'Ruth', keepDrawings: false };
+export const DEFAULT_SETTINGS: HouseholdSettings = { ageBand: 'kid', gentleMode: true, narrator: 'Ruth', keepDrawings: false, language: 'en-US' };
 
 export async function putHousehold(householdId: string) {
   await ddb.send(

@@ -8,6 +8,7 @@ import { AvatarStack } from '../components/Avatar';
 import { Icon } from '../components/Icon';
 import { T } from '../components/Typography';
 import { colors, fonts, px, radius } from '../theme/tokens';
+import { useT } from '../i18n';
 
 const native = Platform.OS !== 'web';
 
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function EndOverlay({ story, bedtime, onReadAgain, onNewStory, onHome }: Props) {
+  const t = useT();
   const appear = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -34,28 +36,28 @@ export function EndOverlay({ story, bedtime, onReadAgain, onNewStory, onHome }: 
         <LinearGradient colors={['rgba(7,6,26,0.7)', 'rgba(7,6,26,0.97)']} style={StyleSheet.absoluteFill} />
         <Animated.View style={[styles.center, { transform: [{ translateY: rise }] }]}>
           <Icon name={bedtime ? 'moon' : 'sparkle'} size={px(64)} color={colors.gold} />
-          <T style={styles.theEnd}>{bedtime ? 'Sweet dreams' : 'The End'}</T>
+          <T style={styles.theEnd}>{bedtime ? t('end.sweetDreams') : t('end.theEnd')}</T>
           <T variant="h3" color={colors.muted} align="center">
             {story.title}
           </T>
           <View style={styles.credits}>
             <AvatarStack people={story.contributors} size={px(52)} />
             <T variant="body" color={colors.parchment}>
-              Woven together by {story.contributors.map((c) => c.name).join(', ')}
+              {t('end.credits', { names: story.contributors.map((c) => c.name).join(', ') })}
             </T>
           </View>
           <View style={styles.saved}>
             <Icon name="check" size={px(24)} color={colors.teal} strokeWidth={3} />
             <T variant="caption" color={colors.teal}>
-              SAVED TO YOUR FAMILY BOOKSHELF
+              {t('end.saved')}
             </T>
           </View>
           <SpatialNavigationView direction="horizontal" style={styles.actions}>
             <DefaultFocus>
-              <Button label="Read it again" icon="refresh" size="lg" onSelect={onReadAgain} />
+              <Button label={t('end.again')} icon="refresh" size="lg" onSelect={onReadAgain} />
             </DefaultFocus>
-            <Button label="Weave a new story" icon="sparkle" kind="ghost" size="lg" onSelect={onNewStory} />
-            <Button label="Home" icon="home" kind="ghost" size="lg" onSelect={onHome} />
+            <Button label={t('end.new')} icon="sparkle" kind="ghost" size="lg" onSelect={onNewStory} />
+            <Button label={t('end.home')} icon="home" kind="ghost" size="lg" onSelect={onHome} />
           </SpatialNavigationView>
         </Animated.View>
       </Animated.View>

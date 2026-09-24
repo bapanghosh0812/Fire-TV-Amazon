@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { DeleteObjectsCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import {
+  DEFAULT_LANGUAGE,
+  LANGUAGES,
   THREAD_COLORS,
   type CreateRoomResponse,
   type HouseholdResponse,
@@ -47,6 +49,10 @@ import { runAgent } from '../lib/agent';
 import { QueryCommand, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 
 const MAX_PLAYERS = 8;
+
+function validLanguage(code: unknown) {
+  return typeof code === 'string' && LANGUAGES.some((l) => l.code === code) ? code : undefined;
+}
 const STORIES_PER_DAY = 12;
 const MOODS: Mood[] = ['cozy', 'adventure', 'silly', 'curious'];
 const LENGTHS: StoryLength[] = ['short', 'medium'];
@@ -71,6 +77,7 @@ function roomState(r: RoomItem): RoomState {
     mood: r.mood,
     length: r.length,
     ageBand: r.ageBand,
+    language: r.language,
     storyId: r.storyId,
   };
 }
@@ -109,6 +116,7 @@ async function saveSettings(event: Event) {
     gentleMode: typeof body.gentleMode === 'boolean' ? body.gentleMode : hh.settings.gentleMode,
     narrator: typeof body.narrator === 'string' ? cleanText(body.narrator, 20) : hh.settings.narrator,
     keepDrawings: typeof body.keepDrawings === 'boolean' ? body.keepDrawings : hh.settings.keepDrawings,
+    language: validLanguage(body.language) ?? hh.settings.language ?? DEFAULT_LANGUAGE,
   };
   await updateSettings(c.sub, next);
   return json(200, { settings: next });
@@ -118,7 +126,7 @@ async function createRoom(event: Event) {
   const c = need(await claims(event), 'device');
   const hh = await getHousehold(c.sub);
   if (!hh) throw new HttpError(404, 'Household not found');
-  const body = parseBody<{ mood?: Mood; length?: StoryLength }>(event);
+  const body = parseBody<{ mood?: Mood; length?: StoryLength; language?: string }>(event);
 
   const roomId = randomUUID();
   let code = newRoomCode();
@@ -133,6 +141,7 @@ async function createRoom(event: Event) {
     mood: MOODS.includes(body.mood!) ? body.mood! : 'cozy',
     length: LENGTHS.includes(body.length!) ? body.length! : 'short',
     ageBand: hh.settings.ageBand,
+    language: validLanguage(body.language) ?? hh.settings.language ?? DEFAULT_LANGUAGE,
     createdAt: now(),
   };
   await putRoom(room);
@@ -194,7 +203,16 @@ async function submitHero(event: Event, roomId: string) {
   if (name && !(await isKidSafe(name))) throw new HttpError(400, 'Let’s give the hero a different name.');
 
   await broadcast(roomId, { type: 'hero.processing', by: c.sub, drawingUrl: (await signedMediaUrl(key, 1))! });
-  await runAgent({ task: 'hero', roomId, householdId: room.householdId, playerId: c.sub, drawingKey: key, name, ageBand: room.ageBand });
+  await runAgent({
+    task: 'hero',
+    roomId,
+    householdId: room.householdId,
+    playerId: c.sub,
+    drawingKey: key,
+    name,
+    ageBand: room.ageBand,
+    language: room.language ?? DEFAULT_LANGUAGE,
+  });
   return json(202, { ok: true });
 }
 

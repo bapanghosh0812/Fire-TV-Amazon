@@ -1,5 +1,5 @@
 import type { APIGatewayProxyWebsocketEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
-import type { ClientAction, RoomEvent, Thread } from '@storyloom/protocol';
+import { LANGUAGES, type ClientAction, type RoomEvent, type Thread } from '@storyloom/protocol';
 import { verify } from '../lib/auth';
 import { broadcast, sendTo } from '../lib/broadcast';
 import {
@@ -78,8 +78,8 @@ async function handle(conn: ConnItem, action: ClientAction) {
     case 'sync': {
       const room = await getRoom(conn.roomId);
       if (!room) return reply(conn, { type: 'room.closed' });
-      const { roomId, code, players, threads, mood, length, ageBand, storyId } = room;
-      return reply(conn, { type: 'room.state', room: { roomId, code, players, threads, mood, length, ageBand, storyId } });
+      const { roomId, code, players, threads, mood, length, ageBand, language, storyId } = room;
+      return reply(conn, { type: 'room.state', room: { roomId, code, players, threads, mood, length, ageBand, language, storyId } });
     }
 
     case 'thread.set': {
@@ -125,11 +125,12 @@ async function handle(conn: ConnItem, action: ClientAction) {
       const patch: Record<string, string> = {};
       if (action.mood && ['cozy', 'adventure', 'silly', 'curious'].includes(action.mood)) patch.mood = action.mood;
       if (action.length && ['short', 'medium'].includes(action.length)) patch.length = action.length;
+      if (action.language && LANGUAGES.some((l) => l.code === action.language)) patch.language = action.language;
       await updateRoom(conn.roomId, patch);
       const room = await getRoom(conn.roomId);
       if (!room) return;
-      const { roomId, code, players, threads, mood, length, ageBand, storyId } = room;
-      return broadcast(conn.roomId, { type: 'room.state', room: { roomId, code, players, threads, mood, length, ageBand, storyId } });
+      const { roomId, code, players, threads, mood, length, ageBand, language, storyId } = room;
+      return broadcast(conn.roomId, { type: 'room.state', room: { roomId, code, players, threads, mood, length, ageBand, language, storyId } });
     }
 
     case 'vote': {

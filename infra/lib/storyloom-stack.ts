@@ -145,7 +145,10 @@ export class StoryloomStack extends Stack {
       description: 'Keeps every idea and every story word suitable for young children.',
       blockedInputMessaging: 'Let’s try a different idea for a family story.',
       blockedOutputsMessaging: 'Let’s try a different idea for a family story.',
+      // Standard tier = multilingual protection (Classic only covers English, French and Spanish).
+      crossRegionConfig: { guardrailProfileArn: guardrailProfileArn(this) },
       contentPolicyConfig: {
+        contentFiltersTierConfig: { tierName: 'STANDARD' },
         filtersConfig: [
           { type: 'SEXUAL', inputStrength: 'HIGH', outputStrength: 'HIGH' },
           { type: 'VIOLENCE', inputStrength: 'HIGH', outputStrength: 'HIGH' },
@@ -156,6 +159,7 @@ export class StoryloomStack extends Stack {
         ],
       },
       topicPolicyConfig: {
+        topicsTierConfig: { tierName: 'STANDARD' },
         topicsConfig: [
           { name: 'Weapons', type: 'DENY', definition: 'Guns, knives, bombs or other weapons, or using objects to hurt someone.', examples: ['a hero with a gun', 'stab the dragon'] },
           { name: 'Self-harm', type: 'DENY', definition: 'Hurting oneself, suicide, or dangerous challenges.', examples: ['jump off the roof to fly'] },
@@ -172,9 +176,11 @@ export class StoryloomStack extends Stack {
         ],
       },
     });
-    const guardrailVersion = new bedrock.CfnGuardrailVersion(this, 'KidSafeGuardrailV1', {
+    // Guardrail versions are immutable snapshots: bump this id whenever the policy changes
+    // (v1 was Classic tier; v2 is the multilingual Standard tier).
+    const guardrailVersion = new bedrock.CfnGuardrailVersion(this, 'KidSafeGuardrailV2', {
       guardrailIdentifier: guardrail.attrGuardrailId,
-      description: 'v1',
+      description: 'v2: Standard tier, multilingual',
     });
 
     // ----------------------------------------------------------- Realtime
@@ -222,7 +228,7 @@ export class StoryloomStack extends Stack {
     cfKeySecret.grantRead(agentRole);
     agentRole.addToPolicy(bedrockModelsPolicy(this));
     agentRole.addToPolicy(marketplaceEntitlementPolicy());
-    agentRole.addToPolicy(new iam.PolicyStatement({ actions: ['bedrock:ApplyGuardrail'], resources: [guardrail.attrGuardrailArn] }));
+    agentRole.addToPolicy(applyGuardrailPolicy(this, guardrail.attrGuardrailArn));
     agentRole.addToPolicy(new iam.PolicyStatement({ actions: ['polly:SynthesizeSpeech'], resources: ['*'] }));
     agentRole.addToPolicy(new iam.PolicyStatement({ actions: ['rekognition:DetectLabels', 'rekognition:DetectModerationLabels'], resources: ['*'] }));
     agentRole.addToPolicy(
@@ -328,7 +334,7 @@ export class StoryloomStack extends Stack {
       authSecret.grantRead(fn);
       cfKeySecret.grantRead(fn);
       wsStage.grantManagementApiAccess(fn);
-      fn.addToRolePolicy(new iam.PolicyStatement({ actions: ['bedrock:ApplyGuardrail'], resources: [guardrail.attrGuardrailArn] }));
+      fn.addToRolePolicy(applyGuardrailPolicy(this, guardrail.attrGuardrailArn));
     }
     media.grantReadWrite(httpFn);
     media.grantRead(wsFn);
@@ -451,6 +457,18 @@ function bedrockModelsPolicy(stack: Stack) {
       `arn:aws:bedrock:*:${stack.account}:inference-profile/*amazon.nova-*`,
       `arn:aws:bedrock:*:${stack.account}:inference-profile/*stability.*`,
     ],
+  });
+}
+
+function guardrailProfileArn(stack: Stack) {
+  return `arn:aws:bedrock:${stack.region}:${stack.account}:guardrail-profile/us.guardrail.v1:0`;
+}
+
+function applyGuardrailPolicy(stack: Stack, guardrailArn: string) {
+  // Cross-region guardrail inference may run in any US region of the profile.
+  return new iam.PolicyStatement({
+    actions: ['bedrock:ApplyGuardrail'],
+    resources: [guardrailArn, `arn:aws:bedrock:*:${stack.account}:guardrail-profile/us.guardrail.v1:0`],
   });
 }
 

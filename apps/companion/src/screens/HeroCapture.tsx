@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from '../lib/session';
+import { t } from '../i18n';
 import { Icon } from '../ui';
 
 export function HeroCapture({ onDone }: { onDone: () => void }) {
@@ -20,65 +21,58 @@ export function HeroCapture({ onDone }: { onDone: () => void }) {
     if (!file) return;
     try {
       await sendDrawing(file, name.trim());
-      flash('Look at the TV! ✨');
+      flash(t('lookTv'));
       onDone();
     } catch (e) {
-      flash(e instanceof Error ? e.message : 'Upload failed');
+      flash(e instanceof Error ? e.message : t('tangled'));
     }
   }
 
   return (
     <div className="stack fade-in" style={{ flex: 1 }}>
       <button className="back" onClick={onDone}>
-        <Icon name="left" size={18} /> Back
+        <Icon name="left" size={18} /> {t('back')}
       </button>
       <div>
-        <div className="overline">The hero</div>
-        <h1 className="h1">Draw your hero</h1>
-        <p className="body">Use paper and crayons. Any creature, person or thing. Then take a photo from above in good light.</p>
+        <div className="overline">{t('hero')}</div>
+        <h1 className="h1">{t('drawTitle')}</h1>
+        <p className="body">{t('drawBody')}</p>
       </div>
 
-      <input
-        ref={input}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        hidden
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
+      <input ref={input} type="file" accept="image/*" capture="environment" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
 
       {preview ? (
-        <img className="photo" src={preview} alt="Your drawing" />
+        <img className="photo" src={preview} alt="" />
       ) : (
         <button className="dropzone" onClick={() => input.current?.click()}>
           <div>
             <Icon name="camera" size={44} color="var(--gold)" />
             <p className="h2" style={{ marginTop: 10 }}>
-              Snap the drawing
+              {t('snap')}
             </p>
-            <p className="small">Tip: fill the frame with the paper</p>
+            <p className="small">{t('snapTip')}</p>
           </div>
         </button>
       )}
 
-      <input className="field" placeholder="Hero’s name (optional)" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} />
+      <input className="field" placeholder={t('heroName')} value={name} maxLength={24} onChange={(e) => setName(e.target.value)} />
 
       <div className="spacer" />
       {preview ? (
         <div className="stack">
           <button className="btn" onClick={send} disabled={heroBusy}>
-            {heroBusy ? 'Sending to the TV…' : 'Bring it to life'} <Icon name="sparkle" size={18} />
+            {heroBusy ? t('sending') : t('bringAlive')} <Icon name="sparkle" size={18} />
           </button>
           <button className="btn ghost" onClick={() => input.current?.click()} disabled={heroBusy}>
-            Take another photo
+            {t('another')}
           </button>
         </div>
       ) : (
         <button className="btn" onClick={() => input.current?.click()}>
-          <Icon name="camera" size={20} /> Open camera
+          <Icon name="camera" size={20} /> {t('openCamera')}
         </button>
       )}
-      <p className="small center">Photos of real people are rejected automatically. Drawings are deleted within 24 hours unless a parent keeps them.</p>
+      <p className="small center">{t('photoNote')}</p>
     </div>
   );
 }

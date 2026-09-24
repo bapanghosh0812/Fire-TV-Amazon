@@ -5,46 +5,52 @@ import QRCode from 'react-native-qrcode-svg';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { DefaultFocus, SpatialNavigationRoot, SpatialNavigationView } from 'react-tv-space-navigation';
-import type { Mood, Thread, ThreadKind } from '@storyloom/protocol';
+import { languageInfo, type Mood, type Thread, type ThreadKind } from '@storyloom/protocol';
+import { LanguageSheet } from '../components/LanguageSheet';
+import { useSettings } from '../state/settings';
+import { useT, type StringKey } from '../i18n';
 import { Button } from '../components/Button';
 import { Focusable } from '../components/Focusable';
 import { Icon, IconName } from '../components/Icon';
 import { Avatar } from '../components/Avatar';
 import { Pill } from '../components/Pill';
-import { Starfield } from '../components/Starfield';
+import { SkyBackdrop } from '../components/sky/SkyBackdrop';
 import { StoryArt } from '../components/StoryArt';
 import { T } from '../components/Typography';
 import { PickerSheet } from '../lobby/PickerSheet';
 import { HeroReveal } from '../lobby/HeroReveal';
 import { useRoom } from '../state/room';
 import { openRoom, closeRoom, startWeave, syncToRoom } from '../services/session';
+import { config } from '../services/config';
 import { colors, fonts, px, radius, safe } from '../theme/tokens';
 import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Lobby'>;
 
-const MOODS: { id: Mood; label: string; icon: IconName }[] = [
-  { id: 'cozy', label: 'Cozy', icon: 'moon' },
-  { id: 'adventure', label: 'Adventure', icon: 'globe' },
-  { id: 'silly', label: 'Silly', icon: 'sparkle' },
-  { id: 'curious', label: 'Curious', icon: 'bolt' },
+const MOODS: { id: Mood; icon: IconName }[] = [
+  { id: 'cozy', icon: 'moon' },
+  { id: 'adventure', icon: 'globe' },
+  { id: 'silly', icon: 'sparkle' },
+  { id: 'curious', icon: 'bolt' },
 ];
 
-const THREADS: { kind: ThreadKind; title: string; ask: string; icon: IconName }[] = [
-  { kind: 'hero', title: 'Our hero', ask: 'Draw a hero and snap it with your phone', icon: 'brush' },
-  { kind: 'world', title: 'The world', ask: 'Say where the story happens', icon: 'globe' },
-  { kind: 'spark', title: 'The spark', ask: 'Add a twist, a problem or a wish', icon: 'bolt' },
+const THREADS: { kind: ThreadKind; title: StringKey; ask: StringKey; icon: IconName }[] = [
+  { kind: 'hero', title: 'lobby.hero', ask: 'lobby.heroAsk', icon: 'brush' },
+  { kind: 'world', title: 'lobby.world', ask: 'lobby.worldAsk', icon: 'globe' },
+  { kind: 'spark', title: 'lobby.spark', ask: 'lobby.sparkAsk', icon: 'bolt' },
 ];
 
 export function LobbyScreen({ navigation, route }: Props) {
   const isFocused = useIsFocused();
+  const t = useT();
   const room = useRoom();
-  const [picker, setPicker] = useState<ThreadKind | null>(null);
+  const [picker, setPicker] = useState<ThreadKind | 'language' | null>(null);
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     const starter = route.params?.starter;
     if (starter && ['cozy', 'adventure', 'silly', 'curious'].includes(starter)) room.setMood(starter as Mood);
+    room.setLanguage(useSettings.getState().language);
     openRoom().catch(() => {});
     return () => closeRoom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,24 +70,24 @@ export function LobbyScreen({ navigation, route }: Props) {
   }, [ready, starting, navigation]);
 
   const whoIs = useCallback(
-    (id?: string) => (id === 'tv' ? { name: 'Family', color: colors.gold } : room.players.find((p) => p.id === id)),
-    [room.players],
+    (id?: string) => (id === 'tv' ? { name: t('lobby.family'), color: colors.gold } : room.players.find((p) => p.id === id)),
+    [room.players, t],
   );
 
-  const joinUrl = room.joinUrl ?? 'https://storyloom.app';
+  const joinUrl = room.joinUrl ?? config.companionBaseUrl;
+  const joinHost = joinUrl.replace(/^https?:\/\//, '').split('/')[0];
   const code = room.code ?? '····';
 
   return (
     <SpatialNavigationRoot isActive={isFocused && !picker}>
       <View style={styles.screen}>
-        <LinearGradient colors={['#120E38', colors.night]} style={StyleSheet.absoluteFill} />
-        <Starfield density={70} />
+        <SkyBackdrop scrim="top" />
 
         <View style={styles.header}>
           <T variant="overline" color={colors.gold}>
-            STORY STUDIO
+            {t('lobby.overline')}
           </T>
-          <T variant="h1">Let’s weave a story together</T>
+          <T variant="h1">{t('lobby.title')}</T>
         </View>
 
         <View style={styles.body}>
@@ -91,7 +97,7 @@ export function LobbyScreen({ navigation, route }: Props) {
               <QRCode value={joinUrl} size={px(250)} color={colors.night} backgroundColor={colors.parchment} />
             </View>
             <T variant="caption" color={colors.muted} align="center" style={{ marginTop: px(22) }}>
-              SCAN TO JOIN, OR VISIT storyloom.app
+              {t('lobby.scan', { host: joinHost.toUpperCase() })}
             </T>
             <View style={styles.codeRow}>
               {code.split('').map((ch, i) => (
@@ -105,7 +111,7 @@ export function LobbyScreen({ navigation, route }: Props) {
                 <View style={styles.waiting}>
                   <Icon name="phone" size={px(28)} color={colors.dim} />
                   <T variant="body" color={colors.dim}>
-                    Waiting for the family…
+                    {t('lobby.waiting')}
                   </T>
                 </View>
               ) : (
@@ -124,33 +130,34 @@ export function LobbyScreen({ navigation, route }: Props) {
           {/* Threads */}
           <View style={styles.threadsCol}>
             <SpatialNavigationView direction="vertical" style={{ gap: px(26) }}>
-              {THREADS.map((t, i) => {
-                const value = room.threads[t.kind];
+              {THREADS.map((th, i) => {
+                const value = room.threads[th.kind];
                 const by = whoIs(value?.by);
                 const card = (
-                  <Focusable key={t.kind} onSelect={() => setPicker(t.kind)} radius={radius.lg} scale={1.03}>
+                  <Focusable key={th.kind} onSelect={() => setPicker(th.kind)} radius={radius.lg} scale={1.03}>
                     {(focused) => (
                       <ThreadCard
-                        title={t.title}
-                        ask={t.ask}
-                        icon={t.icon}
+                        title={t(th.title)}
+                        ask={t(th.ask)}
+                        icon={th.icon}
                         value={value}
                         byName={by?.name}
                         byColor={by?.color}
                         focused={focused}
-                        processing={t.kind === 'hero' ? room.heroProcessing : undefined}
+                        processing={th.kind === 'hero' ? room.heroProcessing : undefined}
+                        labels={{ magic: t('lobby.heroMagic'), change: t('lobby.change'), choose: t('lobby.chooseOnTv') }}
                       />
                     )}
                   </Focusable>
                 );
-                return i === 0 ? <DefaultFocus key={t.kind}>{card}</DefaultFocus> : card;
+                return i === 0 ? <DefaultFocus key={th.kind}>{card}</DefaultFocus> : card;
               })}
 
               <SpatialNavigationView direction="horizontal" style={styles.settings}>
                 {MOODS.map((m) => (
                   <Pill
                     key={m.id}
-                    label={m.label}
+                    label={t(`moodShort.${m.id}` as StringKey)}
                     icon={m.icon}
                     selected={room.mood === m.id}
                     onSelect={() => {
@@ -161,7 +168,7 @@ export function LobbyScreen({ navigation, route }: Props) {
                 ))}
                 <View style={styles.settingsSep} />
                 <Pill
-                  label="Short"
+                  label={t('lobby.short')}
                   selected={room.length === 'short'}
                   onSelect={() => {
                     room.setLength('short');
@@ -169,7 +176,7 @@ export function LobbyScreen({ navigation, route }: Props) {
                   }}
                 />
                 <Pill
-                  label="Longer"
+                  label={t('lobby.longer')}
                   selected={room.length === 'medium'}
                   onSelect={() => {
                     room.setLength('medium');
@@ -178,17 +185,29 @@ export function LobbyScreen({ navigation, route }: Props) {
                 />
               </SpatialNavigationView>
 
-              <View style={styles.startRow}>
+              <SpatialNavigationView direction="horizontal" style={styles.startRow}>
+                <Pill label={`${t('lobby.language')}: ${languageInfo(room.language).native}`} icon="globe" onSelect={() => setPicker('language')} />
+                <View style={{ flex: 1 }} />
                 <T variant="caption" color={ready ? colors.teal : colors.dim}>
-                  {ready ? 'READY WHEN YOU ARE' : 'ADD A HERO AND A WORLD TO BEGIN'}
+                  {ready ? t('lobby.ready') : t('lobby.needs')}
                 </T>
-                <Button label={starting ? 'Starting…' : 'Start weaving'} icon="sparkle" size="lg" disabled={!ready} onSelect={onStart} />
-              </View>
+                <Button label={starting ? t('lobby.starting') : t('lobby.start')} icon="sparkle" size="lg" disabled={!ready} onSelect={onStart} />
+              </SpatialNavigationView>
             </SpatialNavigationView>
           </View>
         </View>
 
-        {picker ? (
+        {picker === 'language' ? (
+          <LanguageSheet
+            selected={room.language}
+            onClose={() => setPicker(null)}
+            onPick={(code) => {
+              room.setLanguage(code);
+              syncToRoom({ action: 'settings', language: code });
+              setPicker(null);
+            }}
+          />
+        ) : picker ? (
           <PickerSheet
             kind={picker}
             onClose={() => setPicker(null)}
@@ -213,6 +232,7 @@ function ThreadCard({
   byColor,
   focused,
   processing,
+  labels,
 }: {
   title: string;
   ask: string;
@@ -222,6 +242,7 @@ function ThreadCard({
   byColor?: string;
   focused: boolean;
   processing?: { by: string; drawingUrl: string };
+  labels: { magic: string; change: string; choose: string };
 }) {
   const filled = !!value;
   const hero = value?.kind === 'hero' ? value : undefined;
@@ -247,7 +268,7 @@ function ThreadCard({
           {title.toUpperCase()}
         </T>
         <T variant={filled ? 'h2' : 'body'} color={filled ? colors.parchment : colors.muted} numberOfLines={2} style={{ marginTop: px(6) }}>
-          {processing && !hero ? 'Bringing the drawing to life…' : (text ?? ask)}
+          {processing && !hero ? labels.magic : (text ?? ask)}
         </T>
         {hero?.description ? (
           <T variant="caption" color={colors.muted} numberOfLines={1} style={{ marginTop: px(4) }}>
@@ -265,7 +286,7 @@ function ThreadCard({
           </View>
         ) : null}
         <T variant="caption" color={focused ? colors.gold : colors.dim}>
-          {focused ? (filled ? 'CHANGE ›' : 'CHOOSE ON TV ›') : ' '}
+          {focused ? (filled ? labels.change : labels.choose) : ' '}
         </T>
       </View>
     </View>

@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { DefaultFocus, SpatialNavigationRoot } from 'react-tv-space-navigation';
+import { DefaultFocus, SpatialNavigationRoot, SpatialNavigationView } from 'react-tv-space-navigation';
+import { languageInfo } from '@storyloom/protocol';
+import { LanguageSheet } from '../components/LanguageSheet';
+import { useT, type StringKey } from '../i18n';
 import { Button } from '../components/Button';
 import { Icon, IconName } from '../components/Icon';
 import { Logo } from '../components/Logo';
-import { Starfield } from '../components/Starfield';
+import { SkyBackdrop } from '../components/sky/SkyBackdrop';
 import { T } from '../components/Typography';
 import { useSettings } from '../state/settings';
 import { colors, px, radius } from '../theme/tokens';
@@ -16,14 +18,17 @@ import type { RootStackParamList } from '../navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
 const native = Platform.OS !== 'web';
 
-const STEPS: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'phone', title: 'Everyone joins', body: 'Scan the code on the TV with any phone. No app to install.' },
-  { icon: 'brush', title: 'Draw, speak, choose', body: 'A drawing becomes the hero. Say where it happens. Vote on what’s next.' },
-  { icon: 'sparkle', title: 'Watch it come alive', body: 'An illustrated, narrated story that’s yours to keep and re-read.' },
+const STEPS: { icon: IconName; title: StringKey; body: StringKey }[] = [
+  { icon: 'phone', title: 'welcome.step1.title', body: 'welcome.step1.body' },
+  { icon: 'brush', title: 'welcome.step2.title', body: 'welcome.step2.body' },
+  { icon: 'sparkle', title: 'welcome.step3.title', body: 'welcome.step3.body' },
 ];
 
 export function WelcomeScreen({ navigation }: Props) {
   const isFocused = useIsFocused();
+  const t = useT();
+  const language = useSettings((s) => s.language);
+  const [choosing, setChoosing] = useState(false);
   const intro = useRef(new Animated.Value(0)).current;
   const steps = useRef(STEPS.map(() => new Animated.Value(0))).current;
 
@@ -43,10 +48,9 @@ export function WelcomeScreen({ navigation }: Props) {
   };
 
   return (
-    <SpatialNavigationRoot isActive={isFocused}>
+    <SpatialNavigationRoot isActive={isFocused && !choosing}>
       <View style={styles.screen}>
-        <LinearGradient colors={['#1A1454', colors.night]} locations={[0, 0.8]} style={StyleSheet.absoluteFill} />
-        <Starfield density={120} />
+        <SkyBackdrop scrim="center" />
         <Animated.View
           style={[
             styles.center,
@@ -55,7 +59,7 @@ export function WelcomeScreen({ navigation }: Props) {
         >
           <Logo size="lg" />
           <T variant="h2" color={colors.muted} align="center" style={{ marginTop: px(18) }}>
-            Family stories, woven together.
+            {t('welcome.tagline')}
           </T>
         </Animated.View>
 
@@ -77,24 +81,35 @@ export function WelcomeScreen({ navigation }: Props) {
                 <Icon name={s.icon} size={px(44)} color={colors.gold} />
               </View>
               <T variant="h3" align="center">
-                {s.title}
+                {t(s.title)}
               </T>
               <T variant="body" color={colors.muted} align="center" style={{ marginTop: px(8) }}>
-                {s.body}
+                {t(s.body)}
               </T>
             </Animated.View>
           ))}
         </View>
 
-        <View style={styles.cta}>
+        <SpatialNavigationView direction="horizontal" style={styles.cta}>
           <DefaultFocus>
-            <Button label="Let’s begin" icon="sparkle" size="lg" onSelect={begin} />
+            <Button label={t('welcome.begin')} icon="sparkle" size="lg" onSelect={begin} />
           </DefaultFocus>
-          <T variant="caption" color={colors.dim} style={{ marginTop: px(22) }}>
-            MADE FOR FAMILIES · KID-SAFE AI · NO ADS
-          </T>
-        </View>
+          <Button label={languageInfo(language).native} icon="globe" kind="ghost" size="lg" onSelect={() => setChoosing(true)} />
+        </SpatialNavigationView>
+        <T variant="caption" color={colors.dim} style={{ marginTop: px(22) }}>
+          {t('welcome.promise')}
+        </T>
       </View>
+      {choosing ? (
+        <LanguageSheet
+          selected={language}
+          onClose={() => setChoosing(false)}
+          onPick={(code) => {
+            useSettings.getState().update({ language: code });
+            setChoosing(false);
+          }}
+        />
+      ) : null}
     </SpatialNavigationRoot>
   );
 }
@@ -133,5 +148,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: px(22),
   },
-  cta: { alignItems: 'center', marginTop: px(72) },
+  cta: { flexDirection: 'row', alignItems: 'center', gap: px(28), marginTop: px(72) },
 });

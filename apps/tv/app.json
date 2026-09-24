@@ -74,9 +74,9 @@
       "expo-asset"
     ],
     "extra": {
-      "apiBaseUrl": "",
-      "realtimeUrl": "",
-      "companionBaseUrl": ""
+      "apiBaseUrl": "https://37txtjw27h.execute-api.us-east-1.amazonaws.com",
+      "realtimeUrl": "wss://t32iguvj49.execute-api.us-east-1.amazonaws.com/live",
+      "companionBaseUrl": "https://d3afvstjv2yoqq.cloudfront.net"
     }
   }
 }

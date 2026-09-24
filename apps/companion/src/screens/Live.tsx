@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RemoteKeyName } from '@storyloom/protocol';
 import { useSession } from '../lib/session';
+import { t } from '../i18n';
 import { Brand, Icon } from '../ui';
 
 export function Weaving() {
@@ -11,24 +12,24 @@ export function Weaving() {
         <Brand />
       </div>
       <Loom />
-      <div className="overline">Weaving your story</div>
-      <h1 className="h1">{weave.message || 'Gathering everyone’s threads…'}</h1>
+      <div className="overline">{t('weavingTitle')}</div>
+      <h1 className="h1">{t('gathering')}</h1>
       <div className="progress" style={{ margin: '18px 12px 0' }}>
         <i style={{ width: `${Math.round(weave.pct * 100)}%` }} />
       </div>
       <p className="small" style={{ marginTop: 14 }}>
-        Watch the TV. It’ll be ready in a moment.
+        {t('watchTv')}
       </p>
     </div>
   );
 }
 
 function Loom() {
-  const [t, setT] = useState(0);
+  const [time, setTime] = useState(0);
   useEffect(() => {
     let raf = 0;
     const loop = (ms: number) => {
-      setT(ms / 1000);
+      setTime(ms / 1000);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -40,7 +41,7 @@ function Loom() {
       {colors.map((c, i) => {
         let d = '';
         for (let x = 0; x <= 320; x += 6) {
-          const y = 60 + Math.sin(x / 34 + t * 2 + i * 1.3) * (18 + i * 6);
+          const y = 60 + Math.sin(x / 34 + time * 2 + i * 1.3) * (18 + i * 6);
           d += `${x === 0 ? 'M' : 'L'}${x} ${y.toFixed(1)} `;
         }
         return <path key={c} d={d} stroke={c} strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.9" />;
@@ -60,20 +61,21 @@ export function Reading() {
       <div className="topbar">
         <Brand />
         <span className="status">
-          <i /> ROOM {room?.code}
+          <i /> {t('room', { code: room?.code ?? '' })}
         </span>
       </div>
       <div className="center">
-        <div className="overline">{playback ? `Page ${playback.page} of ${playback.total} on the TV` : 'Now reading on the TV'}</div>
-        <h1 className="h1">Snuggle up and listen</h1>
+        <div className="overline">{playback ? t('pageOf', { page: playback.page, total: playback.total }) : t('nowReading')}</div>
+        <h1 className="h1">{t('snuggle')}</h1>
         {playback ? (
           <div className="progress" style={{ margin: '14px 24px 0' }}>
             <i style={{ width: `${Math.round((playback.page / Math.max(1, playback.total)) * 100)}%` }} />
           </div>
         ) : null}
-        <p className="body">You can turn pages from here too. When the story asks a question, you’ll vote right here.</p>
+        <p className="body">{t('readingBody')}</p>
       </div>
-      <div className="dpad" role="group" aria-label="TV remote">
+      {/* The remote keeps TV directions even in right-to-left languages. */}
+      <div className="dpad" role="group" aria-label="TV remote" dir="ltr">
         <span />
         <button aria-label="Up" onClick={() => press('up')}>
           <Icon name="up" />
@@ -96,7 +98,7 @@ export function Reading() {
       </div>
       <div className="spacer" />
       <button className="btn ghost" onClick={() => press('back')}>
-        Back on TV
+        {t('backOnTv')}
       </button>
     </div>
   );
@@ -124,7 +126,7 @@ export function Vote() {
         {!winner ? <span className="status">{left}s</span> : null}
       </div>
       <div>
-        <div className="overline">{winner ? 'The family decided' : 'Your vote'}</div>
+        <div className="overline">{winner ? t('decided') : t('yourVote')}</div>
         <h1 className="h1">{prompt}</h1>
       </div>
       <div className="vote">
@@ -146,7 +148,7 @@ export function Vote() {
           </button>
         ))}
       </div>
-      <p className="small center">{winner ? 'The story continues on the TV…' : myVote ? 'Voted! You can still change your mind.' : 'Tap your favourite'}</p>
+      <p className="small center">{winner ? t('continues') : myVote ? t('voted') : t('tapFav')}</p>
     </div>
   );
 }

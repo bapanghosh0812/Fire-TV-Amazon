@@ -111,6 +111,19 @@ Severity scale: **Blocker** (couldn't continue) · **High** (hours lost / risky 
 | **Workaround** | Switched illustration to Stability AI models on Bedrock (Control Sketch for a child's drawing, text-to-image for pages), which AWS credits cover |
 | **Suggestion** | Announce model retirements in the hackathon updates, and list the recommended replacement model on the model card |
 
+## 9. Guardrails "Standard tier" upgrade silently doesn't apply to the published version
+
+| | |
+|---|---|
+| **Tool** | Amazon Bedrock Guardrails (CloudFormation / CDK) |
+| **Task** | Make kid-safety filters work in Hindi, Japanese, Arabic… by moving the guardrail from Classic to the multilingual Standard tier |
+| **Steps** | Added `contentFiltersTierConfig`/`topicsTierConfig: STANDARD` and `crossRegionConfig` (`us.guardrail.v1:0`) to the existing `AWS::Bedrock::Guardrail`; deployed |
+| **Expected** | The app (which calls `ApplyGuardrail` with the published version) starts blocking unsafe Hindi text |
+| **Actual** | Deploy succeeded, but a Hindi phrase meaning "kill everyone with a gun" was still allowed. `get-guardrail` shows DRAFT = STANDARD while version 1 = CLASSIC: versions are immutable snapshots, and the existing `AWS::Bedrock::GuardrailVersion` resource isn't re-created when the guardrail changes |
+| **Severity** | High (a safety control looks enabled but isn't) |
+| **Workaround** | Create a new `GuardrailVersion` resource on every policy change (we bump its logical id) and test with a real non-English unsafe phrase after each deploy |
+| **Suggestion** | Warn in the console/CLI when the latest version's tier differs from DRAFT, or offer a `AutoPublishVersion` flag on the guardrail resource |
+
 ---
 
 *More entries are added as we build. Last updated: see git history.*

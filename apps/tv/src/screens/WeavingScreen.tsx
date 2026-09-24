@@ -6,28 +6,26 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { WeaveStage } from '@storyloom/protocol';
 import { Icon } from '../components/Icon';
 import { LogoMark } from '../components/Logo';
-import { Starfield } from '../components/Starfield';
+import { SkyBackdrop } from '../components/sky/SkyBackdrop';
 import { T } from '../components/Typography';
 import { useRoom } from '../state/room';
 import { useWeave } from '../state/weave';
 import { colors, px, radius, safe } from '../theme/tokens';
 import type { RootStackParamList } from '../navigation/types';
 import { THREAD_COLORS } from '@storyloom/protocol';
+import { useT, type StringKey } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Weaving'>;
 const native = Platform.OS !== 'web';
 
-const STAGES: { id: WeaveStage; label: string }[] = [
-  { id: 'plan', label: 'Plan' },
-  { id: 'write', label: 'Write' },
-  { id: 'paint', label: 'Paint' },
-  { id: 'voice', label: 'Narrate' },
-  { id: 'safety', label: 'Safety check' },
-];
-const ORDER: WeaveStage[] = ['plan', 'hero', 'write', 'paint', 'voice', 'safety', 'done'];
+// Same order the story agent works in.
+const STAGES: WeaveStage[] = ['plan', 'safety', 'write', 'paint', 'voice'];
+const ORDER: WeaveStage[] = ['plan', 'safety', 'write', 'hero', 'paint', 'voice', 'done'];
 
 export function WeavingScreen({ navigation, route }: Props) {
-  const { stage, message, pct, error } = useWeave();
+  const t = useT();
+  const { stage, pct, error } = useWeave();
+  const message = t(`weave.${stage}` as StringKey);
   const players = useRoom((s) => s.players);
   const { width } = useWindowDimensions();
   const flow = useRef(new Animated.Value(0)).current;
@@ -83,8 +81,7 @@ export function WeavingScreen({ navigation, route }: Props) {
 
   return (
     <View style={styles.screen}>
-      <LinearGradient colors={['#15103F', colors.night]} style={StyleSheet.absoluteFill} />
-      <Starfield density={110} />
+      <SkyBackdrop scrim="center" />
 
       <View style={styles.loom}>
         <Animated.View style={{ transform: [{ translateX }] }}>
@@ -102,28 +99,28 @@ export function WeavingScreen({ navigation, route }: Props) {
 
       <View style={styles.text}>
         <T variant="overline" color={colors.gold}>
-          {error ? 'SOMETHING WENT WRONG' : 'WEAVING YOUR STORY'}
+          {error ? t('weave.error') : t('weave.overline')}
         </T>
         <T variant="h1" align="center" style={{ marginTop: px(12) }}>
-          {error ?? message ?? 'Gathering everyone’s threads…'}
+          {error ?? (pct > 0 ? message : t('weave.gathering'))}
         </T>
         <View style={styles.bar}>
           <Animated.View style={[styles.barFill, { width: barWidth }]} />
         </View>
         <View style={styles.stages}>
           {STAGES.map((s) => {
-            const idx = ORDER.indexOf(s.id);
+            const idx = ORDER.indexOf(s);
             const done = currentIdx > idx;
             const now = currentIdx === idx;
             return (
-              <View key={s.id} style={[styles.stage, now && styles.stageNow]}>
+              <View key={s} style={[styles.stage, now && styles.stageNow]}>
                 {done ? (
                   <Icon name="check" size={px(22)} color={colors.teal} strokeWidth={3} />
                 ) : (
                   <View style={[styles.dot, now && { backgroundColor: colors.gold }]} />
                 )}
                 <T variant="caption" color={done ? colors.teal : now ? colors.parchment : colors.dim}>
-                  {s.label.toUpperCase()}
+                  {t(`stage.${s}` as StringKey).toUpperCase()}
                 </T>
               </View>
             );

@@ -59,6 +59,8 @@ export function SkyBackdrop({ scrim = 'none' }: { scrim?: Scrim }) {
       {theme.clouds > 0 ? <Clouds W={W} H={H} tint={theme.cloudTint} opacity={theme.clouds} /> : null}
       <Mountains W={W} H={H} colors={theme.mountains} ground={theme.ground} haze={theme.haze} />
       {phase === 'night' ? <ShootingStars W={W} H={H} /> : null}
+      {/* A light cinematic shade at the top keeps the logo and menus crisp in bright daylight. */}
+      <LinearGradient colors={['rgba(4,6,24,0.45)', 'rgba(4,6,24,0)']} locations={[0, 0.2]} style={StyleSheet.absoluteFill} />
       <ScrimLayer kind={scrim} />
     </Animated.View>
   );
@@ -164,10 +166,19 @@ function CelestialBody({ W, H, phase }: { W: number; H: number; phase: SkyPhase 
   const theme = THEMES[phase];
   const isMoon = theme.body === 'moon';
   const R = W * (isMoon ? 0.066 : phase === 'day' ? 0.07 : 0.085);
-  const cx = W * 0.78;
+  const cx = W * 0.75;
   const cy = H * theme.bodyY;
   const pulse = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(0)).current;
+  const spin = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isMoon) return;
+    const loop = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 240000, easing: Easing.linear, useNativeDriver: native }));
+    loop.start();
+    return () => loop.stop();
+  }, [spin, isMoon]);
+  const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
   useEffect(() => {
     const p = Animated.loop(
@@ -210,10 +221,46 @@ function CelestialBody({ W, H, phase }: { W: number; H: number; phase: SkyPhase 
           <Circle cx={size / 2} cy={size / 2} r={size / 2} fill="url(#halo)" />
         </Svg>
       </Animated.View>
+      {!isMoon ? (
+        <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ rotate }] }]}>
+          <SunRays size={size} R={R} warm={phase !== 'day'} />
+        </Animated.View>
+      ) : null}
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
         {isMoon ? <MoonDisc c={size / 2} R={R} /> : <SunDisc c={size / 2} R={R} warm={phase !== 'day'} />}
       </Svg>
     </Animated.View>
+  );
+}
+
+/** Long, soft god-rays fanning out from the sun. */
+function SunRays({ size, R, warm }: { size: number; R: number; warm: boolean }) {
+  const c = size / 2;
+  const rays = useMemo(() => {
+    const r = rng(77);
+    return Array.from({ length: 14 }, (_, i) => {
+      const angle = (i / 14) * Math.PI * 2 + r() * 0.2;
+      const len = size * (0.36 + r() * 0.12);
+      const spread = 0.035 + r() * 0.03;
+      const x1 = c + Math.cos(angle - spread) * len;
+      const y1 = c + Math.sin(angle - spread) * len;
+      const x2 = c + Math.cos(angle + spread) * len;
+      const y2 = c + Math.sin(angle + spread) * len;
+      return { d: `M${c} ${c} L${x1} ${y1} L${x2} ${y2} Z`, o: 0.35 + r() * 0.4 };
+    });
+  }, [size, c]);
+  return (
+    <Svg width={size} height={size}>
+      <Defs>
+        <RadialGradient id="ray" cx="50%" cy="50%" r="50%">
+          <Stop offset={String((R * 1.1) / (size / 2))} stopColor={warm ? '#FFD6A0' : '#FFF6D2'} stopOpacity={0.5} />
+          <Stop offset="1" stopColor={warm ? '#FFB070' : '#FFF6D2'} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      {rays.map((ray, i) => (
+        <Path key={i} d={ray.d} fill="url(#ray)" opacity={ray.o} />
+      ))}
+    </Svg>
   );
 }
 
@@ -267,14 +314,19 @@ function MoonDisc({ c, R }: { c: number; R: number }) {
           <Stop offset="1" stopColor="#141633" stopOpacity={0.42} />
         </RadialGradient>
         <RadialGradient id="crater" cx="42%" cy="40%" r="55%">
-          <Stop offset="0" stopColor="#8E897C" stopOpacity={0.55} />
-          <Stop offset="0.8" stopColor="#A7A293" stopOpacity={0.35} />
-          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0.35} />
+          <Stop offset="0" stopColor="#8E897C" stopOpacity={0.45} />
+          <Stop offset="0.75" stopColor="#A7A293" stopOpacity={0.25} />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0.3} />
+        </RadialGradient>
+        <RadialGradient id="mare" cx="50%" cy="50%" r="50%">
+          <Stop offset="0" stopColor="#8A8574" stopOpacity={0.55} />
+          <Stop offset="0.65" stopColor="#8F8A79" stopOpacity={0.32} />
+          <Stop offset="1" stopColor="#9C9786" stopOpacity={0} />
         </RadialGradient>
       </Defs>
       <Circle cx={c} cy={c} r={R} fill="url(#moonDisc)" />
       {maria.map((m, i) => (
-        <Ellipse key={i} cx={c + m.x * R} cy={c + m.y * R} rx={m.rx * R} ry={m.ry * R} fill="#9C9786" opacity={m.o} />
+        <Ellipse key={i} cx={c + m.x * R} cy={c + m.y * R} rx={m.rx * R * 1.25} ry={m.ry * R * 1.25} fill="url(#mare)" opacity={m.o * 2.4} />
       ))}
       {craters.map((k, i) => (
         <Circle key={`c${i}`} cx={c + k.x * R} cy={c + k.y * R} r={k.r * R} fill="url(#crater)" />
@@ -298,12 +350,14 @@ const PUFFS = [
 ];
 
 function Clouds({ W, H, tint, opacity }: { W: number; H: number; tint: [string, string]; opacity: number }) {
+  // Placed away from the top-right controls and the sun/moon; the left side is
+  // under the text scrim, so clouds there stay soft and never fight the words.
   const groups = useMemo(
     () => [
-      { x: W * 0.16, y: H * 0.16, s: W * 0.045, drift: W * 0.03, ms: 38000, o: 0.9 },
-      { x: W * 0.52, y: H * 0.3, s: W * 0.032, drift: W * 0.04, ms: 46000, o: 0.75 },
-      { x: W * 0.9, y: H * 0.1, s: W * 0.028, drift: W * 0.025, ms: 52000, o: 0.7 },
-      { x: W * 0.34, y: H * 0.43, s: W * 0.05, drift: W * 0.02, ms: 60000, o: 0.55 },
+      { x: W * 0.56, y: H * 0.13, s: W * 0.034, drift: W * 0.03, ms: 38000, o: 0.9 },
+      { x: W * 0.9, y: H * 0.44, s: W * 0.03, drift: W * 0.025, ms: 46000, o: 0.8 },
+      { x: W * 0.64, y: H * 0.4, s: W * 0.042, drift: W * 0.035, ms: 52000, o: 0.7 },
+      { x: W * 0.28, y: H * 0.1, s: W * 0.03, drift: W * 0.02, ms: 60000, o: 0.45 },
     ],
     [W, H],
   );
@@ -329,8 +383,9 @@ function Cloud({ x, y, s, drift, ms, o, tint }: { x: number; y: number; s: numbe
     return () => loop.stop();
   }, [v, ms]);
   const translateX = v.interpolate({ inputRange: [0, 1], outputRange: [-drift, drift] });
-  const w = s * 5.6;
-  const h = s * 2.6;
+  // Canvas with room on every side so no puff is ever clipped.
+  const w = s * 6.4;
+  const h = s * 3.8;
   const id = `cl${Math.round(x)}${Math.round(y)}`;
   return (
     <Animated.View style={{ position: 'absolute', left: x - w / 2, top: y - h / 2, width: w, height: h, opacity: o, transform: [{ translateX }] }}>
@@ -347,10 +402,10 @@ function Cloud({ x, y, s, drift, ms, o, tint }: { x: number; y: number; s: numbe
           </RadialGradient>
         </Defs>
         {PUFFS.map(([px, py, pr], i) => (
-          <Circle key={`s${i}`} cx={w * 0.3 + px * s} cy={h * 0.58 + py * s + s * 0.28} r={pr * s} fill={`url(#${id}s)`} />
+          <Circle key={`s${i}`} cx={w * 0.36 + px * s} cy={h * 0.56 + py * s + s * 0.28} r={pr * s} fill={`url(#${id}s)`} />
         ))}
         {PUFFS.map(([px, py, pr], i) => (
-          <Circle key={`l${i}`} cx={w * 0.3 + px * s} cy={h * 0.52 + py * s} r={pr * s} fill={`url(#${id}l)`} />
+          <Circle key={`l${i}`} cx={w * 0.36 + px * s} cy={h * 0.5 + py * s} r={pr * s} fill={`url(#${id}l)`} />
         ))}
       </Svg>
     </Animated.View>
