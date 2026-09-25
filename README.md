@@ -83,7 +83,8 @@ More detail in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```
 apps/tv          Fire TV app (Expo + react-native-tvos, spatial navigation, read-along player)
-apps/companion   Phone web companion (React + Vite)
+apps/web         Website (Next.js, static export): landing page, phone sign-in for TVs,
+                 family account, legal pages, and the story companion at /j/CODE
 packages/protocol  Shared types for realtime events and data
 services/api     Lambda handlers: HTTP API + WebSocket (TypeScript)
 services/agent   Story engine: Strands agents on AgentCore Runtime (Python)
@@ -113,11 +114,11 @@ npm run deploy -- -c alertEmail=you@example.com
 ```
 Then copy the `ApiUrl`, `RealtimeUrl` and `CompanionUrl` outputs into `apps/tv/app.json → expo.extra` and rebuild the TV app.
 
-### 3. Phone companion (local dev)
+### 3. Website and phone companion (local dev)
 ```bash
-cd apps/companion
+cd apps/web
 npm install
-npm run dev            # preview mode simulates the TV when no API is configured
+npm run dev            # http://localhost:5174 — the companion's preview mode simulates the TV when no API is configured
 ```
 
 ## Security & privacy

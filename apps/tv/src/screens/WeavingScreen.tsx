@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { WeaveStage } from '@storyloom/protocol';
 import { Icon } from '../components/Icon';
 import { LogoMark } from '../components/Logo';
-import { SkyBackdrop } from '../components/sky/SkyBackdrop';
+import { useSky } from '../components/sky/skyState';
 import { T } from '../components/Typography';
 import { useRoom } from '../state/room';
 import { useWeave } from '../state/weave';
@@ -23,6 +23,7 @@ const STAGES: WeaveStage[] = ['plan', 'safety', 'write', 'paint', 'voice'];
 const ORDER: WeaveStage[] = ['plan', 'safety', 'write', 'hero', 'paint', 'voice', 'done'];
 
 export function WeavingScreen({ navigation, route }: Props) {
+  useSky('center');
   const t = useT();
   const { stage, pct, error } = useWeave();
   const message = t(`weave.${stage}` as StringKey);
@@ -81,7 +82,6 @@ export function WeavingScreen({ navigation, route }: Props) {
 
   return (
     <View style={styles.screen}>
-      <SkyBackdrop scrim="center" />
 
       <View style={styles.loom}>
         <Animated.View style={{ transform: [{ translateX }] }}>
@@ -132,7 +132,7 @@ export function WeavingScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.night, alignItems: 'center' },
+  screen: { flex: 1, backgroundColor: 'transparent', alignItems: 'center' },
   loom: { marginTop: px(170), height: px(260), width: '100%', justifyContent: 'center', alignItems: 'center' },
   core: {
     position: 'absolute',

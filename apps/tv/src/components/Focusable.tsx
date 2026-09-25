@@ -2,6 +2,8 @@ import React, { forwardRef, useEffect, useRef } from 'react';
 import { Animated, Platform, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { SpatialNavigationFocusableView, SpatialNavigationNodeRef } from 'react-tv-space-navigation';
 import { colors, motion, px, radius as radii } from '../theme/tokens';
+import { sfx } from '../audio/director';
+import { useSettings } from '../state/settings';
 
 const useNative = Platform.OS !== 'web';
 
@@ -35,6 +37,7 @@ export function FocusFrame({
   }, [focused, progress]);
 
   const animatedScale = progress.interpolate({ inputRange: [0, 1], outputRange: [1, scale] });
+  const outline = useSettings((s) => s.focusStyle === 'outline' || s.highContrast);
 
   return (
     <Animated.View style={[style, { transform: [{ scale: animatedScale }], zIndex: focused ? 10 : 0 }]}>
@@ -42,13 +45,13 @@ export function FocusFrame({
         pointerEvents="none"
         style={[
           styles.halo,
-          { borderRadius: radius + px(14), borderColor: ringColor, opacity: Animated.multiply(progress, 0.28) },
+          { borderRadius: radius + px(14), borderColor: ringColor, opacity: Animated.multiply(progress, outline ? 0 : 0.28) },
         ]}
       />
       <View style={{ borderRadius: radius, overflow: 'hidden' }}>{children}</View>
       <Animated.View
         pointerEvents="none"
-        style={[styles.ring, { borderRadius: radius + px(6), borderColor: ringColor, opacity: progress }]}
+        style={[styles.ring, outline && styles.ringBold, { borderRadius: radius + px(6), borderColor: outline ? '#FFFFFF' : ringColor, opacity: progress }]}
       />
     </Animated.View>
   );
@@ -74,7 +77,10 @@ export const Focusable = forwardRef<SpatialNavigationNodeRef, FocusableProps>(fu
     <SpatialNavigationFocusableView
       ref={ref}
       onSelect={onSelect}
-      onFocus={onFocus}
+      onFocus={() => {
+        sfx('focus');
+        onFocus?.();
+      }}
       onBlur={onBlur}
       style={style as ViewStyle}
       viewProps={{ accessible: true, accessibilityRole: 'button' }}
@@ -97,6 +103,7 @@ const styles = StyleSheet.create({
     bottom: -px(6),
     borderWidth: px(4),
   },
+  ringBold: { borderWidth: px(6) },
   halo: {
     position: 'absolute',
     top: -px(14),

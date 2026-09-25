@@ -1,0 +1,51 @@
+{
+  "luna-lighthouse": {
+    "title": "Luna e o farol da Lua",
+    "summary": "Quando o farol da lua se apaga, uma pequena dragoa roxa precisa encontrar uma grande luz.",
+    "pages": {
+      "0": "Bem acima da Terra sonolenta, na lua prateada e silenciosa, havia um farol alto com um telhado listrado feito bala. Toda noite, sua luz dourada varria o céu, para que as estrelas perdidas encontrassem o caminho de casa.",
+      "1": "Luna era uma pequena dragoa roxa, com uma coroa torta e um coração enorme. Ela morava no pé do farol, num quarto redondo cheio de almofadas e poeira da lua.",
+      "2": "Certa noite, a luz dourada piscou… e se apagou. Bem longe, uma estrelinha bebê começou a chorar. “Não consigo ver o caminho de casa!”, gritou ela no escuro.",
+      "3": "Luna olhou para a lâmpada fria e escura. Ela podia pedir ajuda aos cometas apressados, ou podia tentar uma coisa que nunca, nunquinha tinha feito antes.",
+      "4a": "Luna voou até a beirada da lua e acenou para os cometas que passavam zunindo. “Por favor”, disse ela, “me emprestem um pouquinho da sua luz.” Os cometas deram risadinhas e rodopiaram em volta do farol como fitas brilhantes.",
+      "5a": "Eles voaram em círculos e mais círculos, até a lâmpada voltar a brilhar, mais forte do que nunca. A estrelinha seguiu as fitas até em casa. “Obrigada, Luna!”, cintilou ela.",
+      "4b": "Luna subiu todos os noventa e nove degraus até o topo. Respirou fundo, encheu as bochechas e… fuuuu! Uma chaminha quentinha se enrolou dentro da lâmpada.",
+      "5b": "O farol brilhou roxo e dourado, a luz mais linda que a lua já tinha visto. A estrelinha a seguiu até em casa, e Luna aprendeu que dragões pequenos podem fazer uma luz bem grande.",
+      "6": "De volta ao seu quarto de almofadas, Luna deu um bocejo sonolento de dragoa. Lá fora, a luz continuava varrendo o céu devagarinho. Boa noite, Luna. Boa noite, estrelinhas."
+    },
+    "choice": { "prompt": "Como Luna deve trazer a luz de volta?", "options": { "a": "Pedir ajuda aos cometas", "b": "Usar o seu próprio fogo de dragoa" } }
+  },
+  "tiger-roar": {
+    "title": "O tigre que esqueceu o rugido",
+    "summary": "Raja acorda e seu rugido sai como um guincho. A selva inteira ajuda a encontrá-lo.",
+    "pages": {
+      "0": "Raja, o tigre, esticou as patas enormes, abriu bem a boca e RUGIU. Só que não foi um rugido. Foi um guinchinho bem pequenininho… iiic.",
+      "1": "A arara riu tanto que caiu do galho. “Seu rugido sumiu!”, grasnou ela. “Vamos procurá-lo!”",
+      "2": "Eles procuraram debaixo das folhas de bananeira. Procuraram atrás da cachoeira. Procuraram até dentro da orelha do hipopótamo sonolento, que não gostou nem um pouco.",
+      "3": "Por fim, um sapinho chegou pulando. “Eu peguei emprestado”, cochichou ele. “Eu queria ser barulhento só uma vez.” Raja sorriu. “Então vamos ser barulhentos juntos!”",
+      "4": "Então Raja e o sapinho respiraram fundo e RUGIRAM e COAXARAM ao mesmo tempo. A selva inteira comemorou, e até o hipopótamo balançou as orelhas."
+    }
+  },
+  "pip-cloud-whales": {
+    "title": "Capitã Pip e as baleias de nuvem",
+    "summary": "Uma pirata do céu bem pequenininha segue uma canção entre as nuvens e faz os maiores amigos do céu.",
+    "pages": {
+      "0": "A capitã Pip era a menor pirata do céu da cidade flutuante, mas tinha a maior luneta. Toda manhã ela procurava aventuras entre as nuvens.",
+      "1": "Certa manhã, ela ouviu uma canção, grave e suave, como uma canção de ninar cantarolada pelo vento. “Velas ao vento!”, gritou Pip, e seu barco de papel subiu para o céu.",
+      "2": "Ela navegou pelas nuvens cor-de-rosa, passou pela ponte do arco-íris, até que as viu: baleias feitas de nuvem, cantando enquanto nadavam pelo céu.",
+      "3": "A menor baleia estava presa num nó de trovão. Pip amarrou uma corda no barco, puxou com toda a força e… pop! A baleinha estava livre.",
+      "4": "Naquela noite, as baleias de nuvem levaram Pip para casa cantando. E desde então, toda manhã, quando você ouvir o vento cantarolar, são elas dando bom-dia para ela."
+    }
+  },
+  "beep-garden": {
+    "title": "Beep e o jardim de estrelas",
+    "summary": "Um robozinho curioso descobre como as estrelas nascem e planta a sua própria constelação.",
+    "pages": {
+      "0": "Beep era um robô pequenino e redondo que cuidava de um jardim bem na beirada do espaço. Todo dia, Beep regava as flores da lua e fazia uma grande pergunta: de onde vêm as estrelas?",
+      "1": "O velho e sábio cometa explicou que as estrelas nascem dentro de nuvens gigantes de gás e poeira chamadas nebulosas, onde a gravidade junta tudo até ficar quente o bastante para brilhar.",
+      "2": "Então Beep juntou poeira de estrelas dos caminhos do jardim, apertou tudo numa semente brilhante e a plantou no pedacinho de céu mais macio e escuro.",
+      "3": "Beep esperou, regou e esperou mais um pouco. As estrelas levam milhões de anos para crescer, lembrou o cometa, mas um jardineiro sempre precisa começar de algum lugar.",
+      "4": "Naquela noite, Beep arrumou as sementes mais brilhantes no formato de um regador. Agora, se você olhar para cima com muita atenção, talvez veja a constelação de Beep sorrindo para você."
+    }
+  }
+}

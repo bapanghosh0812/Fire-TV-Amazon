@@ -15,7 +15,12 @@ const KEYS: Record<string, RemoteKey> = {
   Space: RemoteKey.PlayPause,
   MediaPlayPause: RemoteKey.PlayPause,
   KeyM: RemoteKey.Menu,
+  Delete: RemoteKey.Delete,
 };
+for (let d = 0; d <= 9; d++) {
+  KEYS[`Digit${d}`] = String(d) as RemoteKey;
+  KEYS[`Numpad${d}`] = String(d) as RemoteKey;
+}
 
 class WebRemote implements RemoteControl {
   private bus = mitt<{ key: RemoteKey }>();
@@ -23,6 +28,9 @@ class WebRemote implements RemoteControl {
   constructor() {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       window.addEventListener('keydown', (e) => {
+        // Let real text fields keep their keys (typing names and emails).
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') && !['ArrowUp', 'ArrowDown', 'Escape', 'Enter'].includes(e.key)) return;
         const key = KEYS[e.code] ?? KEYS[e.key];
         if (!key) return;
         e.preventDefault();
@@ -41,6 +49,7 @@ class WebRemote implements RemoteControl {
   emit(key: RemoteKey) {
     this.bus.emit('key', key);
   }
+  claimBack() {}
 }
 
 export default new WebRemote();

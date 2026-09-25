@@ -1,0 +1,51 @@
+{
+  "luna-lighthouse": {
+    "title": "Luna et le phare de la Lune",
+    "summary": "Quand le phare de la lune s’éteint, une petite dragonne violette doit trouver une grande lumière.",
+    "pages": {
+      "0": "Bien au-dessus de la Terre endormie, sur la lune argentée et silencieuse, se dressait un grand phare au toit rayé comme un sucre d’orge. Chaque nuit, sa lumière dorée balayait le ciel pour que les étoiles perdues retrouvent le chemin de la maison.",
+      "1": "Luna était une petite dragonne violette, avec une couronne de travers et un très grand cœur. Elle vivait tout en bas du phare, dans une chambre ronde pleine de coussins et de poussière de lune.",
+      "2": "Une nuit, la lumière dorée clignota… puis s’éteignit. Très loin, un bébé étoile se mit à pleurer. « Je ne vois plus le chemin de la maison ! » cria-t-il dans le noir.",
+      "3": "Luna leva les yeux vers la lampe froide et sombre. Elle pouvait demander de l’aide aux comètes filantes, ou bien essayer quelque chose qu’elle n’avait jamais, jamais fait.",
+      "4a": "Luna s’envola jusqu’au bord de la lune et fit signe aux comètes qui passaient en trombe. « S’il vous plaît, dit-elle, prêtez-moi un peu de votre lumière. » Les comètes gloussèrent et tourbillonnèrent autour du phare comme des rubans lumineux.",
+      "5a": "Elles tournèrent et tournèrent, jusqu’à ce que la lampe se remette à briller, plus fort que jamais. Le bébé étoile suivit les rubans jusque chez lui. « Merci, Luna ! » scintilla-t-il.",
+      "4b": "Luna grimpa les quatre-vingt-dix-neuf marches jusqu’au sommet. Elle prit une grande inspiration, gonfla les joues et… fffouh ! Une toute petite flamme chaude vint se lover dans la lampe.",
+      "5b": "Le phare brilla de violet et d’or, la plus belle lumière que la lune ait jamais vue. Le bébé étoile la suivit jusque chez lui, et Luna apprit que les petits dragons peuvent faire une grande lumière.",
+      "6": "De retour dans sa chambre de coussins, Luna bâilla un grand bâillement de dragonne ensommeillée. Dehors, la lumière continuait de balayer doucement le ciel. Bonne nuit, Luna. Bonne nuit, petites étoiles."
+    },
+    "choice": { "prompt": "Comment Luna doit-elle ramener la lumière ?", "options": { "a": "Demander de l’aide aux comètes", "b": "Utiliser son propre feu de dragonne" } }
+  },
+  "tiger-roar": {
+    "title": "Le tigre qui avait oublié son rugissement",
+    "summary": "Raja se réveille et son rugissement sort comme un petit couinement. Toute la jungle l’aide à le retrouver.",
+    "pages": {
+      "0": "Raja le tigre étira ses énormes pattes, ouvrit grand la gueule et RUGIT. Sauf que ce n’était pas du tout un rugissement. C’était un tout petit… couinement.",
+      "1": "La perruche rit si fort qu’elle tomba de sa branche. « Ton rugissement a disparu ! » piailla-t-elle. « Allons le chercher ! »",
+      "2": "Ils cherchèrent sous les feuilles de bananier. Ils cherchèrent derrière la cascade. Ils cherchèrent même dans l’oreille de l’hippopotame endormi, qui n’apprécia pas du tout.",
+      "3": "Enfin, une petite grenouille arriva en sautillant. « Je l’ai emprunté, chuchota-t-elle. Je voulais faire du bruit, rien qu’une fois. » Raja sourit. « Alors faisons du bruit ensemble ! »",
+      "4": "Alors Raja et la grenouille prirent une grande inspiration et RUGIRENT et COASSÈRENT en même temps. Toute la jungle applaudit, et même l’hippopotame remua les oreilles."
+    }
+  },
+  "pip-cloud-whales": {
+    "title": "Capitaine Pip et les baleines de nuages",
+    "summary": "Une toute petite pirate du ciel suit une chanson à travers les nuages et se fait les plus grands amis du ciel.",
+    "pages": {
+      "0": "Capitaine Pip était la plus petite pirate du ciel de la ville flottante, mais elle avait la plus grande longue-vue. Chaque matin, elle fouillait les nuages à la recherche d’aventures.",
+      "1": "Un matin, elle entendit une chanson, grave et douce, comme une berceuse fredonnée par le vent. « Toutes voiles dehors ! » cria Pip, et son bateau de papier s’éleva dans le ciel.",
+      "2": "Elle vogua à travers les nuages roses, passa le pont de l’arc-en-ciel, jusqu’à ce qu’elle les voie : des baleines faites de nuages, qui chantaient en nageant dans le ciel.",
+      "3": "La plus petite baleine était coincée dans un nœud de tonnerre. Pip attacha une corde à son bateau, tira de toutes ses forces et… pop ! La petite baleine était libre.",
+      "4": "Cette nuit-là, les baleines de nuages raccompagnèrent Pip en chantant. Et depuis, chaque matin, quand tu entends le vent fredonner, ce sont elles qui lui disent bonjour."
+    }
+  },
+  "beep-garden": {
+    "title": "Beep et le jardin d’étoiles",
+    "summary": "Un petit robot curieux découvre comment naissent les étoiles et plante sa propre constellation.",
+    "pages": {
+      "0": "Beep était un tout petit robot rond qui s’occupait d’un jardin tout au bord de l’espace. Chaque jour, Beep arrosait les fleurs de lune et posait une grande question : d’où viennent les étoiles ?",
+      "1": "La vieille comète sage lui expliqua que les étoiles naissent dans d’immenses nuages de gaz et de poussière appelés nébuleuses, où la gravité rassemble tout jusqu’à ce que ce soit assez chaud pour briller.",
+      "2": "Alors Beep ramassa de la poussière d’étoiles sur les allées du jardin, la tassa dans une graine lumineuse et la planta dans le coin de ciel le plus doux et le plus sombre.",
+      "3": "Beep attendit, arrosa, puis attendit encore. Les étoiles mettent des millions d’années à pousser, rappela la comète, mais un jardinier doit toujours commencer quelque part.",
+      "4": "Cette nuit-là, Beep disposa les graines les plus brillantes en forme d’arrosoir. Maintenant, si tu regardes le ciel très attentivement, tu verras peut-être la constellation de Beep te sourire."
+    }
+  }
+}

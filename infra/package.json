@@ -6,9 +6,9 @@
   "description": "Storyloom AWS infrastructure (CDK)",
   "scripts": {
     "build:agent": "python ../services/agent/build.py",
-    "build:companion": "npm --prefix ../apps/companion run build",
+    "build:web": "npm --prefix ../apps/web run build",
     "synth": "cdk synth",
-    "deploy": "npm run build:agent && npm run build:companion && cdk deploy --require-approval never --outputs-file ../outputs.json",
+    "deploy": "npm run build:agent && npm run build:web && cdk deploy --require-approval never --outputs-file ../outputs.json",
     "diff": "cdk diff",
     "destroy": "cdk destroy",
     "typecheck": "tsc --noEmit"

@@ -1,0 +1,51 @@
+{
+  "luna-lighthouse": {
+    "title": "Luna und der Leuchtturm auf dem Mond",
+    "summary": "Als der Leuchtturm auf dem Mond erlischt, muss ein kleines lila Drachenmädchen ein großes Licht finden.",
+    "pages": {
+      "0": "Hoch über der schläfrigen Erde, auf dem stillen silbernen Mond, stand ein großer Leuchtturm mit einem Dach, gestreift wie eine Zuckerstange. Jede Nacht strich sein goldenes Licht über den Himmel, damit verirrte Sterne den Weg nach Hause fanden.",
+      "1": "Luna war ein kleines lila Drachenmädchen mit einer schiefen Krone und einem riesengroßen Herzen. Sie wohnte ganz unten im Leuchtturm, in einem runden Zimmer voller Kissen und Mondstaub.",
+      "2": "Eines Nachts flackerte das goldene Licht … und ging aus. Weit weg fing ein kleines Sternenbaby an zu weinen. „Ich sehe den Weg nach Hause nicht!“, rief es in die Dunkelheit.",
+      "3": "Luna blickte hinauf zur kalten, dunklen Lampe. Sie konnte die flinken Kometen um Hilfe bitten – oder etwas versuchen, das sie noch nie, nie zuvor getan hatte.",
+      "4a": "Luna flatterte zum Rand des Mondes und winkte den vorbeisausenden Kometen. „Bitte“, sagte sie, „leiht mir ein bisschen von eurem Licht.“ Die Kometen kicherten und wirbelten wie leuchtende Bänder um den Leuchtturm.",
+      "5a": "Rundherum flogen sie, bis die Lampe wieder strahlte, heller als je zuvor. Das Sternenbaby folgte den Bändern bis nach Hause. „Danke, Luna!“, funkelte es.",
+      "4b": "Luna stieg alle neunundneunzig Stufen bis ganz nach oben. Sie holte tief Luft, blies die Backen auf und … fffuuusch! Eine winzige, warme Flamme ringelte sich in die Lampe.",
+      "5b": "Der Leuchtturm leuchtete lila und golden – das schönste Licht, das der Mond je gesehen hatte. Das Sternenbaby folgte ihm bis nach Hause, und Luna lernte, dass kleine Drachen großes Licht machen können.",
+      "6": "Zurück in ihrem Kissenzimmer gähnte Luna ein müdes Drachengähnen. Draußen strich das Licht weiter sanft über den Himmel. Gute Nacht, Luna. Gute Nacht, ihr kleinen Sterne."
+    },
+    "choice": { "prompt": "Wie soll Luna das Licht zurückbringen?", "options": { "a": "Die Kometen um Hilfe bitten", "b": "Ihr eigenes Drachenfeuer benutzen" } }
+  },
+  "tiger-roar": {
+    "title": "Der Tiger, der sein Brüllen vergaß",
+    "summary": "Raja wacht auf, und sein Brüllen kommt als Quieken heraus. Der ganze Dschungel hilft ihm, es wiederzufinden.",
+    "pages": {
+      "0": "Raja, der Tiger, streckte seine riesigen Tatzen, riss das Maul weit auf und BRÜLLTE. Nur war es gar kein Brüllen. Es war ein winzig kleines … Quieken.",
+      "1": "Die Papageiendame lachte so sehr, dass sie von ihrem Ast fiel. „Dein Brüllen ist weg!“, krächzte sie. „Komm, wir suchen es!“",
+      "2": "Sie suchten unter den Bananenblättern. Sie suchten hinter dem Wasserfall. Sie suchten sogar im Ohr des schläfrigen Nilpferds, was ihm überhaupt nicht gefiel.",
+      "3": "Endlich hüpfte ein kleiner Frosch herbei. „Ich habe es mir ausgeliehen“, flüsterte er. „Ich wollte nur ein einziges Mal laut sein.“ Raja lächelte. „Dann lass uns zusammen laut sein!“",
+      "4": "Also holten Raja und der Frosch tief Luft und BRÜLLTEN und QUAKTEN genau gleichzeitig. Der ganze Dschungel jubelte, und sogar das Nilpferd wackelte mit den Ohren."
+    }
+  },
+  "pip-cloud-whales": {
+    "title": "Kapitänin Pip und die Wolkenwale",
+    "summary": "Eine winzige Himmelspiratin folgt einem Lied durch die Wolken und findet die größten Freunde am Himmel.",
+    "pages": {
+      "0": "Kapitänin Pip war die kleinste Himmelspiratin der schwebenden Stadt, aber sie hatte das größte Fernrohr. Jeden Morgen suchte sie die Wolken nach Abenteuern ab.",
+      "1": "Eines Morgens hörte sie ein Lied, tief und sanft, wie ein Schlaflied, das der Wind summte. „Alle Segel setzen!“, rief Pip, und ihr Papierboot hob sich in den Himmel.",
+      "2": "Durch rosa Wolken segelte sie, vorbei an der Regenbogenbrücke, bis sie sie sah: Wale aus Wolken, die sangen, während sie durch den Himmel schwammen.",
+      "3": "Der kleinste Wal steckte in einem Donnerknoten fest. Pip band ein Seil an ihr Boot, zog mit aller Kraft und … plopp! Der kleine Wal war frei.",
+      "4": "In dieser Nacht sangen die Wolkenwale Pip den ganzen Weg nach Hause. Und seitdem sagen sie ihr jeden Morgen Guten Morgen – immer wenn du den Wind summen hörst."
+    }
+  },
+  "beep-garden": {
+    "title": "Beep und der Sternengarten",
+    "summary": "Ein neugieriger kleiner Roboter lernt, wie Sterne entstehen, und pflanzt ein eigenes Sternbild.",
+    "pages": {
+      "0": "Beep war ein winziger runder Roboter, der sich um einen Garten ganz am Rand des Weltalls kümmerte. Jeden Tag goss Beep die Mondblumen und stellte eine große Frage: Woher kommen die Sterne?",
+      "1": "Der weise alte Komet erklärte, dass Sterne in riesigen Wolken aus Gas und Staub geboren werden, die man Nebel nennt. Dort zieht die Schwerkraft alles zusammen, bis es heiß genug ist, um zu leuchten.",
+      "2": "Also sammelte Beep Sternenstaub von den Gartenwegen, drückte ihn zu einem leuchtenden Samen und pflanzte ihn in das weichste, dunkelste Stück Himmel.",
+      "3": "Beep wartete und goss und wartete noch ein bisschen länger. Sterne brauchen Millionen von Jahren zum Wachsen, erinnerte der Komet, aber ein Gärtner muss immer irgendwo anfangen.",
+      "4": "In dieser Nacht legte Beep die hellsten Samen in Form einer Gießkanne aus. Wenn du jetzt ganz genau nach oben schaust, siehst du vielleicht Beeps Sternbild, das dich anlächelt."
+    }
+  }
+}

@@ -55,6 +55,20 @@ export async function ensureDevice(): Promise<HouseholdResponse> {
   return device;
 }
 
+/** After sign-in the TV may join the family's existing household (same bookshelf on every TV). */
+export async function adoptHousehold(householdId: string, deviceToken: string) {
+  device = { householdId, deviceToken };
+  await kv.set(DEVICE_KEY, JSON.stringify(device));
+}
+
+export async function currentDeviceToken() {
+  try {
+    return (await ensureDevice()).deviceToken;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function syncBookshelf() {
   const d = await ensureDevice();
   const { stories } = await api<{ stories: StorySummary[] }>('/stories', { token: d.deviceToken });
@@ -83,6 +97,13 @@ export async function syncBookshelf() {
 }
 
 /** Fetches the full story (fresh signed URLs) when a bookshelf item is opened. */
+/** "Delete story history": removes every family story from the cloud (the demo books stay). */
+export async function deleteAllStories() {
+  const d = await ensureDevice();
+  const { stories } = await api<{ stories: StorySummary[] }>('/stories', { token: d.deviceToken });
+  for (const s of stories) await api(`/stories/${s.id}`, { method: 'DELETE', token: d.deviceToken });
+}
+
 export async function loadStory(id: string): Promise<Story> {
   const d = await ensureDevice();
   const { story } = await api<{ story: Story }>(`/stories/${id}`, { token: d.deviceToken });

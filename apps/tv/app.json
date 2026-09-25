@@ -71,7 +71,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-asset"
+      "expo-asset",
+      "expo-video"
     ],
     "extra": {
       "apiBaseUrl": "https://37txtjw27h.execute-api.us-east-1.amazonaws.com",

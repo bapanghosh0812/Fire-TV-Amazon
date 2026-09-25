@@ -14,7 +14,7 @@ import { Focusable } from '../components/Focusable';
 import { Icon, IconName } from '../components/Icon';
 import { Avatar } from '../components/Avatar';
 import { Pill } from '../components/Pill';
-import { SkyBackdrop } from '../components/sky/SkyBackdrop';
+import { useSky } from '../components/sky/skyState';
 import { StoryArt } from '../components/StoryArt';
 import { T } from '../components/Typography';
 import { PickerSheet } from '../lobby/PickerSheet';
@@ -41,6 +41,7 @@ const THREADS: { kind: ThreadKind; title: StringKey; ask: StringKey; icon: IconN
 ];
 
 export function LobbyScreen({ navigation, route }: Props) {
+  useSky('top');
   const isFocused = useIsFocused();
   const t = useT();
   const room = useRoom();
@@ -81,7 +82,6 @@ export function LobbyScreen({ navigation, route }: Props) {
   return (
     <SpatialNavigationRoot isActive={isFocused && !picker}>
       <View style={styles.screen}>
-        <SkyBackdrop scrim="top" />
 
         <View style={styles.header}>
           <T variant="overline" color={colors.gold}>
@@ -294,7 +294,7 @@ function ThreadCard({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.night },
+  screen: { flex: 1, backgroundColor: 'transparent' },
   header: { paddingHorizontal: safe.x, paddingTop: safe.y + px(10), gap: px(8) },
   body: { flex: 1, flexDirection: 'row', paddingHorizontal: safe.x, paddingTop: px(40), gap: px(64) },
   joinPanel: {

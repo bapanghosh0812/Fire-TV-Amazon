@@ -37,9 +37,13 @@ export function configureRemote() {
     }
     if (navigationRef.isReady() && navigationRef.canGoBack()) {
       navigationRef.goBack();
-    } else if (Platform.OS === 'android') {
-      BackHandler.exitApp();
+      return;
     }
+    // On the first screen, ask before leaving (can be turned off in Settings → Remote & voice).
+    const { useSettings } = require('../state/settings') as typeof import('../state/settings');
+    const { useExit } = require('../components/ExitDialog') as typeof import('../components/ExitDialog');
+    if (useSettings.getState().exitConfirm) useExit.getState().set(true);
+    else if (Platform.OS === 'android') BackHandler.exitApp();
   });
 }
 

@@ -2,11 +2,13 @@ import { SignJWT, jwtVerify } from 'jose';
 import { env } from './env';
 import { secret } from './secrets';
 
-// Three kinds of short, scoped tokens — no passwords, no personal data:
-//  device: identifies a household's TV (long-lived, like a streaming app login)
-//  tv:     the TV inside one Story Studio room
-//  player: a family member's phone inside one room
+// Short, scoped tokens — no passwords, no personal data inside:
+//  account: a signed-in grown-up (phone-verified); `ver` lets them sign out everywhere
+//  device:  identifies a household's TV (long-lived, like a streaming app login)
+//  tv:      the TV inside one Story Studio room
+//  player:  a family member's phone inside one room
 export type Claims =
+  | { typ: 'account'; sub: string; ver: number }
   | { typ: 'device'; sub: string }
   | { typ: 'tv'; sub: string; room: string }
   | { typ: 'player'; sub: string; room: string; hh: string };
@@ -15,6 +17,11 @@ const ISSUER = 'storyloom';
 
 async function key() {
   return new TextEncoder().encode(await secret(env.secretArn));
+}
+
+/** A separate key for hashing phone numbers and codes, derived from the signing secret. */
+export async function pepper() {
+  return `storyloom-pepper:${await secret(env.secretArn)}`;
 }
 
 export async function sign(claims: Claims, ttl: string) {

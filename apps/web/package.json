@@ -1,0 +1,23 @@
+{
+  "name": "storyloom-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Storyloom website: landing page, phone sign-in for TVs, family account, legal pages and the story companion",
+  "scripts": {
+    "dev": "next dev -p 5174",
+    "build": "next build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "typescript": "~5.9.2"
+  }
+}

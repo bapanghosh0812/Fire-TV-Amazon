@@ -1,5 +1,7 @@
+import { solarPhase } from './solar';
+
 export type SkyPhase = 'sunrise' | 'day' | 'sunset' | 'night';
-export type SkyMode = 'auto' | 'day' | 'night';
+export type SkyMode = 'auto' | SkyPhase;
 
 export interface SkyTheme {
   sky: [string, string, string, string]; // top → horizon
@@ -60,17 +62,19 @@ export const THEMES: Record<SkyPhase, SkyTheme> = {
   },
 };
 
-/** Phase from the TV's local clock (no location needed). */
+/** Phase from the real sun position for the TV's time zone (falls back to the clock). */
 export function phaseAt(date = new Date()): SkyPhase {
-  const h = date.getHours() + date.getMinutes() / 60;
-  if (h >= 5.5 && h < 7.5) return 'sunrise';
-  if (h >= 7.5 && h < 17.25) return 'day';
-  if (h >= 17.25 && h < 19) return 'sunset';
-  return 'night';
+  try {
+    return solarPhase(date);
+  } catch {
+    const h = date.getHours() + date.getMinutes() / 60;
+    if (h >= 5.5 && h < 7.5) return 'sunrise';
+    if (h >= 7.5 && h < 17.25) return 'day';
+    if (h >= 17.25 && h < 19) return 'sunset';
+    return 'night';
+  }
 }
 
 export function resolvePhase(mode: SkyMode, date = new Date()): SkyPhase {
-  if (mode === 'day') return 'day';
-  if (mode === 'night') return 'night';
-  return phaseAt(date);
+  return mode === 'auto' ? phaseAt(date) : mode;
 }

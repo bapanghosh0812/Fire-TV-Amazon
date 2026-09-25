@@ -33,9 +33,11 @@ export function handler(fn: (event: APIGatewayProxyEventV2) => Promise<APIGatewa
     try {
       return await fn(event);
     } catch (err) {
-      const status = (err as { status?: number }).status ?? 500;
-      if (status >= 500) console.error(JSON.stringify({ level: 'error', route: event.routeKey, message: (err as Error).message, stack: (err as Error).stack }));
-      return json(status, { message: status >= 500 ? 'Something went wrong on our side. Please try again.' : (err as Error).message });
+      // Errors we raise on purpose carry a status and a friendly message; anything else stays private.
+      const known = typeof (err as { status?: number }).status === 'number';
+      const status = known ? (err as { status: number }).status : 500;
+      if (!known || status >= 500) console.error(JSON.stringify({ level: 'error', route: event.routeKey, message: (err as Error).message, stack: known ? undefined : (err as Error).stack }));
+      return json(status, { message: known ? (err as Error).message : 'Something went wrong on our side. Please try again.' });
     }
   };
 }

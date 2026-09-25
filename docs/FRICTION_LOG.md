@@ -124,6 +124,19 @@ Severity scale: **Blocker** (couldn't continue) · **High** (hours lost / risky 
 | **Workaround** | Create a new `GuardrailVersion` resource on every policy change (we bump its logical id) and test with a real non-English unsafe phrase after each deploy |
 | **Suggestion** | Warn in the console/CLI when the latest version's tier differs from DRAFT, or offer a `AutoPublishVersion` flag on the guardrail resource |
 
+## 10. Paid account, but Amazon Translate and SMS still say "needs a subscription"
+
+| | |
+|---|---|
+| **Tool** | Amazon Translate, AWS End User Messaging SMS, Amazon SNS (SMS settings) |
+| **Task** | Translate captions on demand, and send one-time sign-in codes by text message |
+| **Steps** | After upgrading the account from the Free plan to the Paid plan: `aws translate translate-text ...`, `aws pinpoint-sms-voice-v2 describe-account-attributes`, `aws sns get-sms-sandbox-account-status` |
+| **Expected** | The services work (or a clear message about sandbox limits) |
+| **Actual** | `SubscriptionRequiredException: The AWS Access Key Id needs a subscription for the service` on all of them, with no hint about which plan or activation step is missing. Service Quotas and Bedrock showed the same pattern (quotas of 0) |
+| **Severity** | High (features look broken; the error reads like an IAM or billing problem) |
+| **Workaround** | Shipped the phone sign-in with SMS behind a deploy-time switch (`-c smsEnabled=true`) and reserved demo numbers (`+1 555-01xx`, the fictional range) for judges; translated the demo bookshelf into 7 languages by hand; opened a support case |
+| **Suggestion** | When an account moves from Free to Paid, activate every service at once, or return an error that says “service activation pending after plan change” with an ETA |
+
 ---
 
 *More entries are added as we build. Last updated: see git history.*

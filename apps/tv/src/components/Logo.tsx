@@ -1,23 +1,46 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Stop } from 'react-native-svg';
 import { T } from './Typography';
 import { colors, fonts, px } from '../theme/tokens';
 
+/** A golden crescent moon holding an open storybook, with a thread weaving up to a star. */
 export function LogoMark({ size = px(64) }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 64 64">
       <Defs>
-        <LinearGradient id="lm" x1="0" y1="1" x2="1" y2="0">
-          <Stop offset="0" stopColor={colors.goldDeep} />
+        <LinearGradient id="lmMoon" x1="0.1" y1="0.1" x2="0.9" y2="0.95">
+          <Stop offset="0" stopColor="#FFE7AE" />
+          <Stop offset="0.55" stopColor={colors.gold} />
+          <Stop offset="1" stopColor={colors.goldDeep} />
+        </LinearGradient>
+        <LinearGradient id="lmPage" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFF3D1" stopOpacity={0.34} />
+          <Stop offset="1" stopColor="#FFF3D1" stopOpacity={0.12} />
+        </LinearGradient>
+        <LinearGradient id="lmThread" x1="0" y1="1" x2="1" y2="0">
+          <Stop offset="0" stopColor={colors.coral} />
           <Stop offset="1" stopColor={colors.goldBright} />
         </LinearGradient>
+        <RadialGradient id="lmGlow" cx="0.5" cy="0.5" r="0.5">
+          <Stop offset="0" stopColor="#FFDC94" stopOpacity={0.9} />
+          <Stop offset="1" stopColor="#FFDC94" stopOpacity={0} />
+        </RadialGradient>
       </Defs>
-      <Path d="M8 46c9-5 17-5 24 0V19c-7-6-15-6-24-1z" fill="rgba(245,198,107,0.12)" stroke="url(#lm)" strokeWidth={2.6} strokeLinejoin="round" />
-      <Path d="M56 46c-9-5-17-5-24 0V19c7-6 15-6 24-1z" fill="rgba(245,198,107,0.12)" stroke="url(#lm)" strokeWidth={2.6} strokeLinejoin="round" />
-      <Path d="M5 57c11-3 17-13 22-21s12-16 22-22" stroke={colors.coral} strokeWidth={2.6} fill="none" strokeLinecap="round" />
-      <Path d="M5 60c13-2 21-11 27-20s11-15 20-19" stroke={colors.teal} strokeWidth={2.2} fill="none" strokeLinecap="round" opacity={0.9} />
-      <Path d="M54 4c.5 3.6 2.4 5.5 6 6-3.6.5-5.5 2.4-6 6-.5-3.6-2.4-5.5-6-6 3.6-.5 5.5-2.4 6-6z" fill={colors.goldBright} />
+      <Path d="M25.4 9.1 A24 24 0 1 0 49.8 40.5 A20 20 0 1 1 25.4 9.1 Z" fill="url(#lmMoon)" />
+      <Path d="M22 37.5 C27 34.2 31.6 34.2 36 37.5 L36 24.5 C31.6 21.2 27 21.2 22 24.5 Z" fill="url(#lmPage)" stroke="#FFE7AE" strokeWidth={1.7} strokeLinejoin="round" />
+      <Path d="M50 37.5 C45 34.2 40.4 34.2 36 37.5 L36 24.5 C40.4 21.2 45 21.2 50 24.5 Z" fill="url(#lmPage)" stroke="#FFE7AE" strokeWidth={1.7} strokeLinejoin="round" />
+      <Path
+        d="M25.3 27.6 C28 26.4 30.4 26.4 32.8 27.6 M25.3 31 C28 29.8 30.4 29.8 32.8 31 M39.2 27.6 C41.6 26.4 44 26.4 46.7 27.6 M39.2 31 C41.6 29.8 44 29.8 46.7 31"
+        stroke="#FFE7AE"
+        strokeOpacity={0.55}
+        strokeWidth={1}
+        fill="none"
+        strokeLinecap="round"
+      />
+      <Path d="M36 24 C35.5 17.5 41 17.8 42 13.5 C42.8 10.2 46 8.8 48.5 9.4" fill="none" stroke="url(#lmThread)" strokeWidth={2} strokeLinecap="round" />
+      <Circle cx={51} cy={8} r={7.5} fill="url(#lmGlow)" />
+      <Path d="M51 2.5 C51.5 6 52.7 7.4 56 8 C52.7 8.6 51.5 10 51 13.5 C50.5 10 49.3 8.6 46 8 C49.3 7.4 50.5 6 51 2.5 Z" fill="#FFF3D1" />
     </Svg>
   );
 }

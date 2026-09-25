@@ -101,7 +101,9 @@ export class StoryloomStack extends Stack {
     const spaRouting = new cloudfront.Function(this, 'SpaRouting', {
       runtime: cloudfront.FunctionRuntime.JS_2_0,
       code: cloudfront.FunctionCode.fromInline(
-        `function handler(event){var r=event.request;if(r.uri.indexOf('.')===-1){r.uri='/index.html';}return r;}`,
+        // Static Next.js site: /j/ABCD opens the story companion, /legal/terms -> /legal/terms/index.html.
+        // Next 16 asks for prefetch files as "__next.a.b.__PAGE__.txt" but exports them as "__next.a/b/__PAGE__.txt".
+        `function handler(event){var r=event.request;var u=r.uri;if(u.indexOf('/j/')===0&&u.length>3&&u.indexOf('.')===-1){r.uri='/j/index.html';return r;}var i=u.lastIndexOf('/');var f=u.substring(i+1);if(f.indexOf('__next.')===0&&f.slice(-4)==='.txt'){var p=f.slice(0,-4).split('.');if(p.length>2){r.uri=u.substring(0,i+1)+p[0]+'.'+p[1]+'/'+p.slice(2).join('/')+'.txt';}return r;}if(u.indexOf('.')===-1){r.uri=u.charAt(u.length-1)==='/'?u+'index.html':u+'/index.html';}return r;}`,
       ),
     });
     const securityHeaders = new cloudfront.ResponseHeadersPolicy(this, 'SecurityHeaders', {
@@ -318,6 +320,12 @@ export class StoryloomStack extends Stack {
       AGENT_RUNTIME_ARN: runtime.attrAgentRuntimeArn,
       GUARDRAIL_ID: guardrail.attrGuardrailId,
       GUARDRAIL_VERSION: guardrailVersion.attrVersion,
+      // Phone sign-in: real SMS stays off until an origination identity is registered
+      // (cdk deploy -c smsEnabled=true -c smsOrigination=... [-c smsInEntityId=... -c smsInTemplateId=...]).
+      SMS_ENABLED: String(this.node.tryGetContext('smsEnabled') ?? 'false'),
+      SMS_ORIGINATION: String(this.node.tryGetContext('smsOrigination') ?? ''),
+      SMS_IN_ENTITY_ID: String(this.node.tryGetContext('smsInEntityId') ?? ''),
+      SMS_IN_TEMPLATE_ID: String(this.node.tryGetContext('smsInTemplateId') ?? ''),
     };
     const httpFn = new nodejs.NodejsFunction(this, 'HttpFn', {
       entry: path.join(root, 'services/api/src/handlers/http.ts'),
@@ -338,6 +346,13 @@ export class StoryloomStack extends Stack {
     }
     media.grantReadWrite(httpFn);
     media.grantRead(wsFn);
+    // Sign-in codes by SMS: AWS End User Messaging first, Amazon SNS as a fallback.
+    httpFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['sms-voice:SendTextMessage', 'sns:Publish'],
+        resources: ['*'],
+      }),
+    );
     httpFn.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['bedrock-agentcore:InvokeAgentRuntime'],
@@ -350,7 +365,7 @@ export class StoryloomStack extends Stack {
       corsPreflight: {
         allowOrigins: ['*'],
         allowMethods: [apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST, apigw.CorsHttpMethod.PUT, apigw.CorsHttpMethod.DELETE],
-        allowHeaders: ['authorization', 'content-type'],
+        allowHeaders: ['authorization', 'content-type', 'x-poll-token'],
         maxAge: Duration.hours(1),
       },
     });
@@ -372,18 +387,33 @@ export class StoryloomStack extends Stack {
       [apigw.HttpMethod.GET, '/stories/{id}'],
       [apigw.HttpMethod.DELETE, '/stories/{id}'],
       [apigw.HttpMethod.GET, '/health'],
+      // Phone sign-in, accounts and "sign in on your phone" for TVs.
+      [apigw.HttpMethod.POST, '/auth/otp'],
+      [apigw.HttpMethod.POST, '/auth/otp/verify'],
+      [apigw.HttpMethod.GET, '/account'],
+      [apigw.HttpMethod.PUT, '/account/profile'],
+      [apigw.HttpMethod.POST, '/account/terms'],
+      [apigw.HttpMethod.PUT, '/account/settings'],
+      [apigw.HttpMethod.POST, '/account/signout-all'],
+      [apigw.HttpMethod.GET, '/account/export'],
+      [apigw.HttpMethod.DELETE, '/account'],
+      [apigw.HttpMethod.POST, '/activations'],
+      [apigw.HttpMethod.GET, '/activations/{id}'],
+      [apigw.HttpMethod.POST, '/activations/{id}/approve'],
+      [apigw.HttpMethod.POST, '/support'],
     ];
     for (const [method, p] of routes) httpApi.addRoutes({ path: p, methods: [method], integration: httpIntegration });
 
-    // ---------------------------------------------------- Companion website
+    // ---------------------------------------- Website (Next.js static export)
+    // Landing page, phone sign-in for TVs, family account, legal pages and the story companion.
     new deploy.BucketDeployment(this, 'CompanionSite', {
       destinationBucket: site,
       sources: [
-        deploy.Source.asset(path.join(root, 'apps/companion/dist')),
+        deploy.Source.asset(path.join(root, 'apps/web/out')),
         deploy.Source.jsonData('config.json', { apiBaseUrl: httpApi.apiEndpoint }),
       ],
       distribution: cdn,
-      distributionPaths: ['/index.html', '/config.json'],
+      distributionPaths: ['/*'],
       memoryLimit: 512,
     });
 

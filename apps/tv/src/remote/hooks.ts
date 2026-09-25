@@ -28,3 +28,10 @@ export function useBackHandler(handler: () => boolean, enabled = true) {
     return pushBackHandler(() => ref.current());
   }, [enabled, isFocused]);
 }
+
+/** Back handler for overlays that exist outside a screen (e.g. app-wide dialogs). */
+export function useOverlayBackHandler(handler: () => boolean) {
+  const ref = useRef(handler);
+  ref.current = handler;
+  useEffect(() => pushBackHandler(() => ref.current()), []);
+}

@@ -47,6 +47,7 @@ import { HttpError, clientIp, cleanText, handler, json, parseBody } from '../lib
 import { drawingUploadTicket, objectExists, s3, signedMediaUrl, withSignedUrls } from '../lib/media';
 import { runAgent } from '../lib/agent';
 import { QueryCommand, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
+import * as account from './account';
 
 const MAX_PLAYERS = 8;
 
@@ -292,19 +293,23 @@ async function removeStory(event: Event, id: string) {
 }
 
 /** "Delete everything": the household, every story and every picture. */
-async function deleteHousehold(event: Event) {
-  const c = need(await claims(event), 'device');
+async function deleteHouseholdData(householdId: string) {
   const items = await ddb.send(
-    new QueryCommand({ TableName: env.table, KeyConditionExpression: 'pk = :pk', ExpressionAttributeValues: { ':pk': `HH#${c.sub}` } }),
+    new QueryCommand({ TableName: env.table, KeyConditionExpression: 'pk = :pk', ExpressionAttributeValues: { ':pk': `HH#${householdId}` } }),
   );
   for (const it of items.Items ?? []) {
     if (typeof it.id === 'string') {
-      await deleteStory(c.sub, it.id, it.createdAt as string);
+      await deleteStory(householdId, it.id, it.createdAt as string);
       await deletePrefix(`stories/${it.id}/`);
     }
   }
-  await deletePrefix(`heroes/${c.sub}/`);
-  await ddb.send(new BatchWriteCommand({ RequestItems: { [env.table]: [{ DeleteRequest: { Key: { pk: `HH#${c.sub}`, sk: 'META' } } }] } }));
+  await deletePrefix(`heroes/${householdId}/`);
+  await ddb.send(new BatchWriteCommand({ RequestItems: { [env.table]: [{ DeleteRequest: { Key: { pk: `HH#${householdId}`, sk: 'META' } } }] } }));
+}
+
+async function deleteHousehold(event: Event) {
+  const c = need(await claims(event), 'device');
+  await deleteHouseholdData(c.sub);
   return json(200, { ok: true });
 }
 
@@ -349,6 +354,32 @@ export const main = handler(async (event) => {
       return story(event, id);
     case 'DELETE /stories/{id}':
       return removeStory(event, id);
+    case 'POST /auth/otp':
+      return account.startOtp(event);
+    case 'POST /auth/otp/verify':
+      return account.verifyOtp(event);
+    case 'GET /account':
+      return account.getAccount(event);
+    case 'PUT /account/profile':
+      return account.saveProfile(event);
+    case 'POST /account/terms':
+      return account.acceptTerms(event);
+    case 'PUT /account/settings':
+      return account.saveAccountSettings(event);
+    case 'POST /account/signout-all':
+      return account.signOutEverywhere(event);
+    case 'GET /account/export':
+      return account.exportAccount(event);
+    case 'DELETE /account':
+      return account.deleteAccount(event, deleteHouseholdData);
+    case 'POST /support':
+      return account.contactUs(event);
+    case 'POST /activations':
+      return account.startActivation(event);
+    case 'GET /activations/{id}':
+      return account.pollActivation(event, id);
+    case 'POST /activations/{id}/approve':
+      return account.approveActivation(event, id);
     case 'GET /health':
       return json(200, { ok: true, time: now() });
     default:

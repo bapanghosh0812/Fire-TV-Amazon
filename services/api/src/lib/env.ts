@@ -41,4 +41,24 @@ export const env = {
   get guardrailVersion() {
     return process.env.GUARDRAIL_VERSION ?? 'DRAFT';
   },
+  // Phone sign-in. Origination identity and India DLT ids are optional until SMS goes to production.
+  get smsOrigination() {
+    return process.env.SMS_ORIGINATION || undefined;
+  },
+  get smsConfigurationSet() {
+    return process.env.SMS_CONFIGURATION_SET || undefined;
+  },
+  get smsIndiaEntityId() {
+    return process.env.SMS_IN_ENTITY_ID || undefined;
+  },
+  get smsIndiaTemplateId() {
+    return process.env.SMS_IN_TEMPLATE_ID || undefined;
+  },
+  /** Real text messages go out only once SMS is set up for production (a deliberate switch). */
+  get smsEnabled() {
+    return process.env.SMS_ENABLED === 'true';
+  },
+  get demoOtpCode() {
+    return process.env.DEMO_OTP_CODE || '246810';
+  },
 };

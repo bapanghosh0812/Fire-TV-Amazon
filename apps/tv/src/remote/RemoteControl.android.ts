@@ -19,7 +19,14 @@ const CODES: Record<number, RemoteKey> = {
   90: RemoteKey.FastForward,
   89: RemoteKey.Rewind,
   82: RemoteKey.Menu,
+  67: RemoteKey.Delete, // DEL (backspace on a keyboard)
+  112: RemoteKey.Delete, // FORWARD_DEL
 };
+// Number keys (some remotes, keyboards and the emulator) type into keypads.
+for (let d = 0; d <= 9; d++) {
+  CODES[7 + d] = String(d) as RemoteKey; // KEYCODE_0..9
+  CODES[144 + d] = String(d) as RemoteKey; // NUMPAD_0..9
+}
 
 class FireTvRemote implements RemoteControl {
   private bus = mitt<{ key: RemoteKey }>();
@@ -29,15 +36,26 @@ class FireTvRemote implements RemoteControl {
       const key = CODES[e.keyCode];
       if (key) this.bus.emit('key', key);
     });
-    // The Back button goes through the system; we turn it into a key event
-    // and swallow it so screens decide what "back" means.
-    BackHandler.addEventListener('hardwareBackPress', () => {
-      if (this.bus.all.get('key')?.length) {
-        this.bus.emit('key', RemoteKey.Back);
-        return true;
-      }
-      return false;
-    });
+    this.claimBack();
+  }
+
+  private backSub?: { remove: () => void };
+  private onBack = () => {
+    if (this.bus.all.get('key')?.length) {
+      this.bus.emit('key', RemoteKey.Back);
+      return true;
+    }
+    return false;
+  };
+
+  /**
+   * The Back button goes through the system; we turn it into a key event and swallow it so
+   * screens decide what "back" means (close a menu first, then leave the page).
+   * Android calls the newest listener first, so this is re-claimed after the navigator mounts.
+   */
+  claimBack() {
+    this.backSub?.remove();
+    this.backSub = BackHandler.addEventListener('hardwareBackPress', this.onBack);
   }
 
   addListener(listener: KeyListener) {

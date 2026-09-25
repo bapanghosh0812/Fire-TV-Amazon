@@ -7,6 +7,7 @@ interface LibraryState {
   upsert: (story: Story) => void;
   remove: (id: string) => void;
   get: (id: string) => Story | undefined;
+  resetToSeed: () => void;
 }
 
 export const useLibrary = create<LibraryState>((set, get) => ({
@@ -18,4 +19,5 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     }),
   remove: (id) => set((s) => ({ stories: s.stories.filter((x) => x.id !== id) })),
   get: (id) => get().stories.find((x) => x.id === id),
+  resetToSeed: () => set({ stories: LIBRARY }),
 }));

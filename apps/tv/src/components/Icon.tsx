@@ -24,7 +24,32 @@ export type IconName =
   | 'shield'
   | 'clock'
   | 'trash'
-  | 'mic';
+  | 'mic'
+  | 'back'
+  | 'subtitles'
+  | 'settings'
+  | 'prev'
+  | 'next'
+  | 'user'
+  | 'bell'
+  | 'music'
+  | 'star'
+  | 'info'
+  | 'logout'
+  | 'download'
+  | 'sliders'
+  | 'palette'
+  | 'text'
+  | 'quality'
+  | 'speed'
+  | 'close'
+  | 'key'
+  | 'eye'
+  | 'remote'
+  | 'heart'
+  | 'data'
+  | 'sun'
+  | 'timer';
 
 interface Props {
   name: IconName;
@@ -139,6 +164,142 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
         <>
           <Rect x={8.5} y={2.5} width={7} height={12} rx={3.5} {...p} />
           <Path d="M5 11a7 7 0 0 0 14 0M12 18v3.5" {...p} />
+        </>
+      );
+    case 'back':
+      return <Path d="M20 12H5M11 5l-7 7 7 7" {...p} />;
+    case 'subtitles':
+      return (
+        <>
+          <Rect x={2.5} y={5} width={19} height={14} rx={2.5} {...p} />
+          <Path d="M10.5 10.2a2.4 2.4 0 1 0 0 3.6M17.5 10.2a2.4 2.4 0 1 0 0 3.6" {...p} />
+        </>
+      );
+    case 'settings':
+      return (
+        <>
+          <Circle cx={12} cy={12} r={3} {...p} />
+          <Path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9L5.3 5.3" {...p} />
+          <Circle cx={12} cy={12} r={6.8} {...p} />
+        </>
+      );
+    case 'prev':
+      return (
+        <>
+          <Path d="M18 5v14l-9.5-7z" fill={color} stroke={color} strokeWidth={1.2} strokeLinejoin="round" />
+          <Path d="M6 5v14" {...p} strokeWidth={2.6} />
+        </>
+      );
+    case 'next':
+      return (
+        <>
+          <Path d="M6 5v14l9.5-7z" fill={color} stroke={color} strokeWidth={1.2} strokeLinejoin="round" />
+          <Path d="M18 5v14" {...p} strokeWidth={2.6} />
+        </>
+      );
+    case 'user':
+      return (
+        <>
+          <Circle cx={12} cy={8} r={4} {...p} />
+          <Path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7" {...p} />
+        </>
+      );
+    case 'bell':
+      return <Path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" {...p} />;
+    case 'music':
+      return (
+        <>
+          <Path d="M9 18V5.5l11-2V16" {...p} />
+          <Circle cx={6.5} cy={18} r={2.5} {...p} />
+          <Circle cx={17.5} cy={16} r={2.5} {...p} />
+        </>
+      );
+    case 'star':
+      return <Path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" {...p} />;
+    case 'info':
+      return (
+        <>
+          <Circle cx={12} cy={12} r={9} {...p} />
+          <Path d="M12 11v6M12 7.5v.2" {...p} />
+        </>
+      );
+    case 'logout':
+      return <Path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14M10 16.5L5.5 12 10 7.5M5.5 12H15" {...p} />;
+    case 'download':
+      return <Path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5M4.5 19.5h15" {...p} />;
+    case 'sliders':
+      return (
+        <>
+          <Path d="M4 7h10M18 7h2M4 17h4M12 17h8" {...p} />
+          <Circle cx={16} cy={7} r={2} {...p} />
+          <Circle cx={10} cy={17} r={2} {...p} />
+        </>
+      );
+    case 'palette':
+      return (
+        <>
+          <Path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2.1A4.5 4.5 0 0 0 21 10.3C21 6.2 17 3 12 3z" {...p} />
+          <Circle cx={7.5} cy={11} r={1.2} fill={color} />
+          <Circle cx={10.5} cy={7} r={1.2} fill={color} />
+          <Circle cx={15} cy={7.5} r={1.2} fill={color} />
+        </>
+      );
+    case 'text':
+      return <Path d="M3 19l5-14 5 14M4.7 14.5h6.6M15 12.5a3 3 0 0 1 6 0V19M21 15.5c-3.5-.6-6 .2-6 2 0 2.2 4 2.2 6-.5" {...p} />;
+    case 'quality':
+      return (
+        <>
+          <Rect x={2.5} y={5} width={19} height={14} rx={2.5} {...p} />
+          <Path d="M7 9.5v5M7 12h3M10 9.5v5M13.5 9.5v5h1.8a2.5 2.5 0 0 0 0-5z" {...p} />
+        </>
+      );
+    case 'speed':
+      return <Path d="M4 17a8 8 0 1 1 16 0M12 17l4-5.5M7 17h10" {...p} />;
+    case 'close':
+      return <Path d="M6 6l12 12M18 6L6 18" {...p} />;
+    case 'key':
+      return (
+        <>
+          <Circle cx={7.5} cy={15.5} r={4} {...p} />
+          <Path d="M10.5 12.5L20 3M16.5 6.5l2.5 2.5M14 9l2 2" {...p} />
+        </>
+      );
+    case 'eye':
+      return (
+        <>
+          <Path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" {...p} />
+          <Circle cx={12} cy={12} r={3} {...p} />
+        </>
+      );
+    case 'remote':
+      return (
+        <>
+          <Rect x={7} y={2.5} width={10} height={19} rx={4} {...p} />
+          <Circle cx={12} cy={8} r={2} {...p} />
+          <Path d="M10 13.5h4M10 16.5h4" {...p} />
+        </>
+      );
+    case 'heart':
+      return <Path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z" {...p} />;
+    case 'data':
+      return (
+        <>
+          <Path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z" {...p} />
+          <Path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" {...p} />
+        </>
+      );
+    case 'sun':
+      return (
+        <>
+          <Circle cx={12} cy={12} r={4.2} {...p} />
+          <Path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9L5.3 5.3" {...p} />
+        </>
+      );
+    case 'timer':
+      return (
+        <>
+          <Circle cx={12} cy={13.5} r={7.5} {...p} />
+          <Path d="M12 9.5v4l2.5 2M9.5 2.5h5M19 6l1.5-1.5" {...p} />
         </>
       );
   }

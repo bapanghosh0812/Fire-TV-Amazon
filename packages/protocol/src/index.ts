@@ -188,6 +188,58 @@ export interface HouseholdResponse {
   deviceToken: string;
 }
 
+// ---------------------------------------------------------------- accounts (phone sign-in)
+
+export type AccountRole = 'parent' | 'guardian' | 'grandparent' | 'teacher' | 'other';
+
+export interface ChildProfile {
+  id: string;
+  name: string;
+  ageBand: AgeBand;
+  avatar: string;
+}
+
+export interface AccountUser {
+  id: string;
+  phone: string; // masked, e.g. "+91 ••••• •••10"
+  name: string;
+  email: string;
+  role: AccountRole;
+  country: string;
+  language: string;
+  children: ChildProfile[];
+  householdId?: string;
+  termsVersion: string | null;
+  termsAcceptedAt: string | null;
+  needsProfile: boolean;
+  needsTerms: boolean;
+  settings: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface OtpStartResponse {
+  requestId: string;
+  phone: string;
+  expiresIn: number;
+  resendIn: number;
+}
+
+export interface SessionResponse {
+  accountToken: string;
+  deviceToken?: string; // present when this TV should switch to the family's household
+  householdId: string;
+  user: AccountUser;
+}
+
+export interface ActivationStartResponse {
+  code: string; // e.g. "BCDF-2345"
+  pollToken: string;
+  expiresIn: number;
+  url: string;
+}
+
+export type ActivationPollResponse = { status: 'pending' | 'expired' } | ({ status: 'approved' } & SessionResponse);
+
 export interface CreateRoomResponse {
   roomId: string;
   code: string;
@@ -223,3 +275,5 @@ export interface RoomState {
 }
 
 export const THREAD_COLORS = ['#FF7A6B', '#3FD0C9', '#B69CFF', '#FFB84D', '#7BD88F', '#FF8FC7'] as const;
+export * from './legal';
+export * from './countries';

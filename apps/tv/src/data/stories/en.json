@@ -1,0 +1,51 @@
+{
+  "luna-lighthouse": {
+    "title": "Luna and the Lighthouse on the Moon",
+    "summary": "When the moon’s lighthouse goes dark, a small purple dragon has to find a big light.",
+    "pages": {
+      "0": "High above the sleepy Earth, on the quiet silver moon, stood a tall lighthouse with a candy-striped roof. Every night its golden light swept across the sky, so that lost stars could find their way home.",
+      "1": "Luna was a small purple dragon with a crooked crown and a very big heart. She lived at the bottom of the lighthouse, in a round room full of pillows and moon-dust.",
+      "2": "One night, the golden light flickered… and went out. Far away, a baby star began to cry. “I can’t see the way home!” it called into the dark.",
+      "3": "Luna looked up at the cold, dark lamp. She could ask the racing comets for help, or she could try something she had never, ever done before.",
+      "4a": "Luna flapped to the edge of the moon and waved at the comets zooming by. “Please,” she said, “lend me a little of your light.” The comets giggled and swirled around the lighthouse like glowing ribbons.",
+      "5a": "Round and round they flew, until the lamp began to shine again, brighter than ever. The baby star followed the ribbons all the way home. “Thank you, Luna!” it twinkled.",
+      "4b": "Luna climbed all ninety-nine steps to the very top. She took a deep breath, puffed out her cheeks and… whoosh! A tiny, warm flame curled into the lamp.",
+      "5b": "The lighthouse glowed purple and gold, the most beautiful light the moon had ever seen. The baby star followed it all the way home, and Luna learned that small dragons can make big light.",
+      "6": "Back in her pillow room, Luna yawned a sleepy dragon yawn. Outside, the light kept sweeping gently across the sky. Goodnight, Luna. Goodnight, little stars."
+    },
+    "choice": { "prompt": "How should Luna bring the light back?", "options": { "a": "Ask the comets for help", "b": "Use her own dragon fire" } }
+  },
+  "tiger-roar": {
+    "title": "The Tiger Who Forgot His Roar",
+    "summary": "Raja wakes up and his roar comes out as a squeak. The whole jungle helps him find it.",
+    "pages": {
+      "0": "Raja the tiger stretched his enormous paws, opened his mouth wide, and ROARED. Except it wasn’t a roar at all. It was a tiny little… squeak.",
+      "1": "The parrot laughed so hard she fell off her branch. “Your roar is missing!” she squawked. “Let’s go and find it!”",
+      "2": "They looked under the banana leaves. They looked behind the waterfall. They even looked inside the sleepy hippo’s ear, which he did not enjoy one bit.",
+      "3": "At last, a little frog hopped up. “I borrowed it,” he whispered. “I wanted to be loud, just once.” Raja smiled. “Then let’s be loud together!”",
+      "4": "So Raja and the frog took a big breath and ROARED and CROAKED at the very same time. The whole jungle cheered, and even the hippo wiggled his ears."
+    }
+  },
+  "pip-cloud-whales": {
+    "title": "Captain Pip and the Cloud Whales",
+    "summary": "A tiny sky-pirate follows a song through the clouds and makes the biggest friends in the sky.",
+    "pages": {
+      "0": "Captain Pip was the smallest sky-pirate in the floating city, but she had the biggest telescope. Every morning she searched the clouds for adventure.",
+      "1": "One morning she heard a song, low and gentle, like a lullaby hummed by the wind. “Full sails!” cried Pip, and her paper boat lifted into the sky.",
+      "2": "Through the pink clouds she sailed, past the rainbow bridge, until she saw them: whales made of cloud, singing as they swam through the sky.",
+      "3": "The smallest whale was stuck in a knot of thunder. Pip tied a rope to her boat, pulled with all her might, and… pop! The little whale was free.",
+      "4": "That night the cloud whales sang Pip all the way home. And every morning since, when you hear the wind hum, that’s them saying good morning to her."
+    }
+  },
+  "beep-garden": {
+    "title": "Beep and the Garden of Stars",
+    "summary": "A curious little robot learns how stars are born, and plants a constellation of its own.",
+    "pages": {
+      "0": "Beep was a tiny round robot who looked after a garden at the very edge of space. Every day Beep watered the moon-flowers and asked one big question: where do stars come from?",
+      "1": "The wise old comet explained that stars are born inside giant clouds of gas and dust called nebulas, where gravity pulls everything together until it gets hot enough to shine.",
+      "2": "So Beep gathered stardust from the garden paths, packed it into a glowing seed, and planted it in the softest, darkest patch of sky.",
+      "3": "Beep waited, and watered, and waited some more. Stars take millions of years to grow, the comet reminded, but a gardener must always begin somewhere.",
+      "4": "That night, Beep arranged the brightest seeds into the shape of a watering can. Now, if you look up very carefully, you might just see Beep’s constellation smiling back."
+    }
+  }
+}

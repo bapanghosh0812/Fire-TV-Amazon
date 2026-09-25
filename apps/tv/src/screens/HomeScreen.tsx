@@ -17,7 +17,7 @@ import { Icon, IconName } from '../components/Icon';
 import { Logo } from '../components/Logo';
 import { AvatarStack } from '../components/Avatar';
 import { StoryArt } from '../components/StoryArt';
-import { SkyBackdrop } from '../components/sky/SkyBackdrop';
+import { useSky } from '../components/sky/skyState';
 import { T } from '../components/Typography';
 import { STARTERS } from '../data/library';
 import { useLibrary } from '../state/library';
@@ -35,6 +35,7 @@ const SHELF_TOP = px(610);
 const SHELF_OFFSET = px(80);
 
 export function HomeScreen({ navigation }: Props) {
+  useSky('left');
   const isFocused = useIsFocused();
   const t = useT();
   const stories = useLibrary((s) => s.stories);
@@ -59,7 +60,6 @@ export function HomeScreen({ navigation }: Props) {
     <SpatialNavigationRoot isActive={isFocused}>
       <View style={styles.screen}>
         {/* Living sky: sun by day, moon and stars by night */}
-        <SkyBackdrop scrim="left" />
         <LinearGradient
           pointerEvents="none"
           colors={['rgba(4,6,24,0)', 'rgba(4,6,24,0.55)', 'rgba(4,6,24,0.85)']}
@@ -116,7 +116,7 @@ export function HomeScreen({ navigation }: Props) {
           {/* Top bar */}
           <SpatialNavigationView direction="horizontal" style={styles.topBar}>
             <Logo />
-            <Button label={t('home.parents')} icon="lock" kind="quiet" onSelect={() => navigation.navigate('Parents')} onFocus={() => setInShelf(false)} />
+            <Button label={t('home.settings')} icon="settings" kind="quiet" onSelect={() => navigation.navigate('Settings')} onFocus={() => setInShelf(false)} />
           </SpatialNavigationView>
 
           {/* Shelf */}
@@ -267,7 +267,7 @@ function BookCard({ story, focused, cta }: { story: Story; focused: boolean; cta
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.night },
+  screen: { flex: 1, backgroundColor: 'transparent' },
   fill: { flex: 1 },
   topBar: {
     flexDirection: 'row',
