@@ -13,6 +13,7 @@ On Optimus laptops SHIM_MCCOMPAT=0x800000001 makes Windows pick the discrete GPU
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import subprocess
 import sys
@@ -28,25 +29,59 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 
-# Art direction per time of day. The sun/moon sits top-right so menus on the left stay readable.
+FOVY = math.radians(50.0)  # must match sky.glsl
+PITCH = math.radians(7.0)
+
+
+def cam_ray(u: float, v: float, aspect: float = 16 / 9) -> tuple[float, float, float]:
+    """World direction through screen point (u, v), y down; the same camera as camRay() in sky.glsl."""
+    ty = math.tan(FOVY / 2)
+    x, y, z = (u * 2 - 1) * ty * aspect, (1 - v * 2) * ty, -1.0
+    n = math.sqrt(x * x + y * y + z * z)
+    x, y, z = x / n, y / n, z / n
+    c, s = math.cos(PITCH), math.sin(PITCH)
+    return x, y * c - z * s, y * s + z * c
+
+
+def az_el(az_deg: float, el_deg: float) -> tuple[float, float, float]:
+    """Direction from azimuth (0 = straight ahead, + to the right) and elevation, both in degrees."""
+    az, el = math.radians(az_deg), math.radians(el_deg)
+    return math.sin(az) * math.cos(el), math.sin(el), -math.cos(az) * math.cos(el)
+
+
+def behind_moon(moon: tuple[float, float], turn_deg: float, el_deg: float | None = None) -> tuple[float, float, float]:
+    """A sun opposite the moon (so it is full), turned a little; by default exactly as far below the horizon."""
+    x, y, z = cam_ray(*moon)
+    el = -math.degrees(math.asin(y)) if el_deg is None else el_deg
+    return az_el(math.degrees(math.atan2(x, -z)) + 180 + turn_deg, el)
+
+
+# Art direction per time of day. A giant white moon stands on the right in every sky, so menus on the
+# left stay readable. At sunrise and sunset the camera faces away from the sun: the full moon rises in
+# the pink twilight band opposite it, as it really does.
+MOON = {"sunrise": (0.735, 0.42), "day": (0.775, 0.3), "sunset": (0.745, 0.43), "night": (0.745, 0.44)}
 PHASES: dict[str, dict] = {
     "sunrise": dict(
-        uBodyScreen=(0.745, 0.6), uNight=0, uExposure=0.5, uCoverage=0.26, uCloudDensity=1.0, uCirrus=0.55,
-        uStars=0.0, uHaze=1.15, uMist=0.55, uGrade=(1.0, 0.99, 1.02), uSaturation=1.02, uWind=3.2, uSeed=3.0,
+        uMoonScreen=MOON["sunrise"], uMoonRadius=10.5, uMoonDay=0.5, uSunDir=behind_moon(MOON["sunrise"], 8, -1.4),
+        uVeil=0.3, uNight=0, uExposure=2.4, uCoverage=0.24, uCloudDensity=1.0, uCirrus=0.5,
+        uStars=0.04, uHaze=1.15, uMist=0.55, uGrade=(1.0, 0.98, 1.03), uSaturation=1.02, uWind=3.2, uSeed=3.0,
         uBodyRadius=2.6, uFireflies=0.0, uMaxOut=0.93,
     ),
     "day": dict(
-        uBodyScreen=(0.78, 0.2), uNight=0, uExposure=0.42, uCoverage=0.2, uCloudDensity=1.0, uCirrus=0.05,
+        uMoonScreen=MOON["day"], uMoonRadius=8.0, uMoonDay=1.6, uSunDir=az_el(-170, 22),
+        uVeil=0.0, uNight=0, uExposure=0.42, uCoverage=0.2, uCloudDensity=1.0, uCirrus=0.05,
         uStars=0.0, uHaze=0.45, uMist=0.0, uGrade=(0.98, 1.0, 1.03), uSaturation=1.06, uWind=3.5, uSeed=11.0,
         uBodyRadius=2.4, uFireflies=0.0, uMaxOut=0.9,
     ),
     "sunset": dict(
-        uBodyScreen=(0.755, 0.585), uNight=0, uExposure=0.42, uCoverage=0.24, uCloudDensity=1.0, uCirrus=0.6,
-        uStars=0.0, uHaze=1.0, uMist=0.2, uGrade=(1.02, 0.93, 0.99), uSaturation=0.92, uWind=3.0, uSeed=23.0,
+        uMoonScreen=MOON["sunset"], uMoonRadius=11.0, uMoonDay=0.55, uSunDir=behind_moon(MOON["sunset"], -8, -0.8),
+        uVeil=0.35, uNight=0, uExposure=2.2, uCoverage=0.16, uCloudDensity=0.8, uCirrus=0.6,
+        uStars=0.08, uHaze=1.0, uMist=0.2, uGrade=(1.02, 0.95, 0.99), uSaturation=0.88, uWind=3.0, uSeed=29.0,
         uBodyRadius=2.8, uFireflies=0.0, uMaxOut=0.93,
     ),
     "night": dict(
-        uBodyScreen=(0.77, 0.25), uNight=1, uExposure=1.35, uCoverage=0.2, uCloudDensity=0.5, uCirrus=0.25,
+        uMoonScreen=MOON["night"], uMoonRadius=12.5, uMoonDay=0.0, uSunDir=behind_moon(MOON["night"], 0),
+        uVeil=0.9, uNight=1, uExposure=1.35, uCoverage=0.2, uCloudDensity=0.5, uCirrus=0.25,
         uStars=1.0, uHaze=0.9, uMist=0.25, uGrade=(0.9, 0.97, 1.08), uSaturation=0.9, uWind=2.6, uSeed=42.0,
         uBodyRadius=5.6, uFireflies=0.8, uMaxOut=0.9,
     ),

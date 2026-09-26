@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Platform, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DefaultFocus, SpatialNavigationRoot, SpatialNavigationView } from 'react-tv-space-navigation';
@@ -15,18 +15,36 @@ const native = Platform.OS !== 'web';
 interface Props {
   story: Story;
   bedtime?: boolean;
+  next?: Story; // the next episode of a series, played automatically after a short countdown
+  onNext?: (id: string) => void;
   onReadAgain: () => void;
   onNewStory: () => void;
   onHome: () => void;
 }
 
-export function EndOverlay({ story, bedtime, onReadAgain, onNewStory, onHome }: Props) {
+const COUNTDOWN = 10;
+
+export function EndOverlay({ story, bedtime, next, onNext, onReadAgain, onNewStory, onHome }: Props) {
   const t = useT();
   const appear = useRef(new Animated.Value(0)).current;
+  const original = story.contributors.length === 0; // a Storyloom Original, not woven by the family
+  // Streaming-style: the next episode starts on its own unless someone picks another button.
+  const [left, setLeft] = useState<number | null>(next && !bedtime ? COUNTDOWN : null);
 
   useEffect(() => {
     Animated.timing(appear, { toValue: 1, duration: 900, useNativeDriver: native }).start();
   }, [appear]);
+
+  useEffect(() => {
+    if (left === null || !next) return;
+    if (left <= 0) {
+      onNext?.(next.id);
+      return;
+    }
+    const id = setTimeout(() => setLeft((s) => (s === null ? null : s - 1)), 1000);
+    return () => clearTimeout(id);
+  }, [left, next, onNext]);
+  const stopCountdown = () => setLeft(null);
 
   const rise = appear.interpolate({ inputRange: [0, 1], outputRange: [px(40), 0] });
 
@@ -40,24 +58,49 @@ export function EndOverlay({ story, bedtime, onReadAgain, onNewStory, onHome }: 
           <T variant="h3" color={colors.muted} align="center">
             {story.title}
           </T>
-          <View style={styles.credits}>
-            <AvatarStack people={story.contributors} size={px(52)} />
-            <T variant="body" color={colors.parchment}>
-              {t('end.credits', { names: story.contributors.map((c) => c.name).join(', ') })}
+          {original ? (
+            <View style={styles.saved}>
+              <Icon name="sparkle" size={px(24)} color={colors.gold} />
+              <T variant="caption" color={colors.gold}>
+                {t('end.original')}
+              </T>
+            </View>
+          ) : (
+            <>
+              <View style={styles.credits}>
+                <AvatarStack people={story.contributors} size={px(52)} />
+                <T variant="body" color={colors.parchment}>
+                  {t('end.credits', { names: story.contributors.map((c) => c.name).join(', ') })}
+                </T>
+              </View>
+              <View style={styles.saved}>
+                <Icon name="check" size={px(24)} color={colors.teal} strokeWidth={3} />
+                <T variant="caption" color={colors.teal}>
+                  {t('end.saved')}
+                </T>
+              </View>
+            </>
+          )}
+          {next ? (
+            <T variant="body" color={colors.muted} align="center" style={{ marginTop: px(12) }}>
+              {left !== null ? t('end.nextIn', { title: next.title, s: left }) : t('end.nextUp', { title: next.title })}
             </T>
-          </View>
-          <View style={styles.saved}>
-            <Icon name="check" size={px(24)} color={colors.teal} strokeWidth={3} />
-            <T variant="caption" color={colors.teal}>
-              {t('end.saved')}
-            </T>
-          </View>
+          ) : null}
           <SpatialNavigationView direction="horizontal" style={styles.actions}>
-            <DefaultFocus>
-              <Button label={t('end.again')} icon="refresh" size="lg" onSelect={onReadAgain} />
-            </DefaultFocus>
-            <Button label={t('end.new')} icon="sparkle" kind="ghost" size="lg" onSelect={onNewStory} />
-            <Button label={t('end.home')} icon="home" kind="ghost" size="lg" onSelect={onHome} />
+            {next ? (
+              <DefaultFocus>
+                <Button label={t('end.nextEpisode')} icon="play" size="lg" onSelect={() => onNext?.(next.id)} />
+              </DefaultFocus>
+            ) : null}
+            {next ? (
+              <Button label={t('end.again')} icon="refresh" kind="ghost" size="lg" onFocus={stopCountdown} onSelect={onReadAgain} />
+            ) : (
+              <DefaultFocus>
+                <Button label={t('end.again')} icon="refresh" size="lg" onSelect={onReadAgain} />
+              </DefaultFocus>
+            )}
+            {original ? null : <Button label={t('end.new')} icon="sparkle" kind="ghost" size="lg" onFocus={stopCountdown} onSelect={onNewStory} />}
+            <Button label={t('end.home')} icon="home" kind="ghost" size="lg" onFocus={stopCountdown} onSelect={onHome} />
           </SpatialNavigationView>
         </Animated.View>
       </Animated.View>

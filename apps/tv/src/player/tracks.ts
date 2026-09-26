@@ -68,6 +68,10 @@ export function storyTitle(story: Story, track: string): string {
   return TEXT[track]?.[story.id]?.title ?? story.title;
 }
 
+export function storySummary(story: Story, track: string): string {
+  return TEXT[track]?.[story.id]?.summary ?? story.summary;
+}
+
 export function choiceText(story: Story, track: string): StoryChoice | undefined {
   const c = TEXT[track]?.[story.id]?.choice;
   if (!c || !story.choice) return story.choice;

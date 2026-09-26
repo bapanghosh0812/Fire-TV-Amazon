@@ -17,6 +17,7 @@ import { WelcomeScreen } from './screens/WelcomeScreen';
 import { LobbyScreen } from './screens/LobbyScreen';
 import { WeavingScreen } from './screens/WeavingScreen';
 import { PlayerScreen } from './screens/PlayerScreen';
+import { ChannelScreen } from './screens/ChannelScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { LanguageScreen } from './screens/LanguageScreen';
 import { SignInScreen } from './screens/SignInScreen';
@@ -121,6 +122,7 @@ export default function App() {
           <Stack.Screen name="Lobby" component={LobbyScreen} />
           <Stack.Screen name="Weaving" component={WeavingScreen} />
           <Stack.Screen name="Player" component={PlayerScreen} />
+          <Stack.Screen name="Channel" component={ChannelScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
       </NavigationContainer>

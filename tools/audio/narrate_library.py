@@ -36,18 +36,23 @@ LANGS = {
     "ja": ("ja-JP", "Kazuha"),
     "ar": ("ar-AE", "Hala"),
 }
-ENGLISH_VOICES = {
-    "luna-lighthouse": ("en-US", "Ruth"),
-    "tiger-roar": ("en-US", "Matthew"),
-    "pip-cloud-whales": ("en-GB", "Amy"),
-    "beep-garden": ("en-US", "Joanna"),
+# Each series keeps its storyteller across episodes.
+SERIES_VOICES = {
+    "luna": ("en-US", "Ruth"),
+    "tiger": ("en-US", "Matthew"),
+    "raja": ("en-US", "Matthew"),
+    "pip": ("en-GB", "Amy"),
+    "beep": ("en-US", "Joanna"),
 }
+
+def english_voice(story: str) -> tuple[str, str]:
+    return SERIES_VOICES[story.split("-")[0]]
 
 
 def job(lang: str, story: str, key: str, text: str) -> tuple[str, str, str, list, int]:
     code, voice = LANGS[lang]
     if lang == "en":
-        code, voice = ENGLISH_VOICES[story]
+        code, voice = english_voice(story)
     out = ASSETS / story / lang / f"{key}.mp3"
     audio, marks, ms = narrate(text, code, voice)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -58,8 +63,10 @@ def job(lang: str, story: str, key: str, text: str) -> tuple[str, str, str, list
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="comma separated language keys")
+    ap.add_argument("--stories", help="comma separated story ids (default: all)")
     a = ap.parse_args()
     only = set(a.only.split(",")) if a.only else None
+    picked = set(a.stories.split(",")) if a.stories else None
 
     jobs = []
     for lang in LANGS:
@@ -67,6 +74,8 @@ def main() -> None:
             continue
         data = json.loads((STORIES / f"{lang}.json").read_text(encoding="utf-8"))
         for story, s in data.items():
+            if picked and story not in picked:
+                continue
             for key, text in s["pages"].items():
                 jobs.append((lang, story, key, text))
 

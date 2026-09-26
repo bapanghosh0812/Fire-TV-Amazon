@@ -10,12 +10,13 @@ interface Props {
   icon?: IconName;
   selected?: boolean;
   onSelect?: () => void;
+  onFocus?: () => void;
 }
 
 /** Toggle chip for settings like mood and length. */
-export function Pill({ label, icon, selected, onSelect }: Props) {
+export function Pill({ label, icon, selected, onSelect, onFocus }: Props) {
   return (
-    <Focusable onSelect={onSelect} radius={radius.pill} scale={1.08}>
+    <Focusable onSelect={onSelect} onFocus={onFocus} radius={radius.pill} scale={1.08}>
       {(focused) => {
         const bg = focused ? colors.parchment : selected ? colors.gold : 'rgba(247,241,227,0.08)';
         const fg = focused || selected ? colors.night : colors.parchment;

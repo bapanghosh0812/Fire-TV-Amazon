@@ -36,6 +36,7 @@ import { playMusic, sfx, type Mood } from '../audio/director';
 import { useBackHandler, useRemoteKeys } from '../remote/hooks';
 import { RemoteKey } from '../remote/keys';
 import { useLibrary } from '../state/library';
+import { catalogStory, nextEpisode } from '../data/series';
 import { useRoom } from '../state/room';
 import { useSettings } from '../state/settings';
 import { isOfflineDemo } from '../services/config';
@@ -69,7 +70,8 @@ function moodMusic(story?: Story): Mood {
 export function PlayerScreen({ route, navigation }: Props) {
   const t = useT();
   useSky('none', true);
-  const story = useLibrary((s) => s.stories.find((x) => x.id === route.params.storyId));
+  const shelved = useLibrary((s) => s.stories.find((x) => x.id === route.params.storyId));
+  const story = shelved ?? catalogStory(route.params.storyId); // bookshelf first, then series episodes
   const settings = useSettings();
   const [chosen, setChosen] = useState<'a' | 'b' | undefined>(story?.chosen);
   const [cursor, setCursor] = useState(0);
@@ -172,12 +174,15 @@ export function PlayerScreen({ route, navigation }: Props) {
   const progress = Math.min(1, narration.elapsedMs / Math.max(1, audio.durationMs ?? timeline.durationMs));
 
   // Cloud stories arrive as bookshelf summaries; fetch pages (fresh signed URLs) on open.
-  const [loadError, setLoadError] = useState<string>();
+  const [loadError, setLoadError] = useState(false);
   useEffect(() => {
     if (!story || story.pages.length || isOfflineDemo) return;
     import('../services/cloud')
       .then((c) => c.loadStory(story.id))
-      .catch((e) => setLoadError(e instanceof Error ? e.message : 'Could not open this story'));
+      .catch((e) => {
+        console.warn('Could not open story', e);
+        setLoadError(true);
+      });
   }, [story]);
 
   useAlexaVoice({
@@ -289,7 +294,7 @@ export function PlayerScreen({ route, navigation }: Props) {
   if (!story || !page) {
     return (
       <View style={[styles.screen, styles.center]}>
-        <T variant="h2">{loadError ?? t('player.opening')}</T>
+        <T variant="h2">{loadError ? t('player.loadError') : t('player.opening')}</T>
       </View>
     );
   }
@@ -505,6 +510,8 @@ export function PlayerScreen({ route, navigation }: Props) {
             setCursor(0);
             setPhase('reading');
           }}
+          next={nextEpisode(story.id)}
+          onNext={(id) => navigation.replace('Player', { storyId: id })}
           onNewStory={() => navigation.replace('Lobby', undefined)}
           onHome={() => navigation.popToTop()}
         />

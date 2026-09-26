@@ -10,7 +10,6 @@ uniform vec4 uTile;        // x0, y0, w, h of this tile in full-frame pixels
 uniform float uTime;       // seconds into the loop
 uniform float uLoop;       // loop length (s): every periodic motion completes whole cycles
 uniform float uFade;       // crossfade length (s) that hides the cloud drift at the seam
-uniform vec2 uBodyScreen;  // sun or moon position on screen (0..1, y down)
 uniform float uNight;      // 0 = sun lights the scene, 1 = moon
 uniform float uExposure;
 uniform float uCoverage;   // cumulus coverage 0..1
@@ -26,6 +25,11 @@ uniform float uSeed;
 uniform float uBodyRadius; // degrees
 uniform float uFireflies;
 uniform float uMaxOut;     // eye-comfort ceiling for the brightest pixel
+uniform vec2 uMoonScreen;  // the moon is in every sky: its position on screen (0..1, y down)
+uniform float uMoonRadius; // degrees (drawn larger than life, like a telephoto moonrise)
+uniform float uMoonDay;    // moon brightness against a lit sky (day and twilight)
+uniform vec3 uSunDir;      // world-space sun direction; may be behind the camera or below the horizon
+uniform float uVeil;       // thin cloud streaks drifting across the moon
 
 const float PI = 3.14159265359;
 const float R0 = 6360e3;
@@ -220,12 +224,19 @@ float lightMarch(vec3 p, vec3 L, float t) {
   return sum * .3;
 }
 
-vec3 bodyDir();
+vec3 moonDir();
+vec3 sunDir();
 vec4 clouds(vec3 ro, vec3 rd, vec3 L, vec3 lightCol, vec3 ambTop, vec3 ambBot, float t, int steps, float jitter, out float depth) {
   depth = 1e9;
   if (raySphere(ro, rd, R0).x > 0.) return vec4(0., 0., 0., 1.);
-  float bodyAng = acos(clamp(dot(rd, bodyDir()), -1., 1.));
-  gClear = smoothstep(radians(uBodyRadius) * 1.4, radians(uBodyRadius) * 3.2 + .28, bodyAng);
+  // Keep the moon (and a visible sun) clear of thick cloud; thin veils cross the moon separately.
+  float moonAng = acos(clamp(dot(rd, moonDir()), -1., 1.));
+  float Rm = radians(uMoonRadius);
+  gClear = smoothstep(Rm * 1.05, Rm * 1.9 + .12, moonAng);
+  if (uNight < .5) {
+    float sunAng = acos(clamp(dot(rd, sunDir()), -1., 1.));
+    gClear *= smoothstep(radians(uBodyRadius) * 1.4, radians(uBodyRadius) * 3.2 + .28, sunAng);
+  }
   float ts = raySphere(ro, rd, R0 + CB).y;
   float te = raySphere(ro, rd, R0 + CT).y;
   te = min(te, ts + 70000.);
@@ -283,7 +294,8 @@ vec4 cirrus(vec3 ro, vec3 rd, vec3 L, vec3 lightCol, vec3 amb, float t) {
 }
 
 // ------------------------------------------------------------------ celestial bodies
-vec3 bodyDir() { return camRay(uBodyScreen); }
+vec3 moonDir() { return camRay(uMoonScreen); }
+vec3 sunDir() { return normalize(uSunDir); }
 
 vec3 sunDisk(vec3 rd, vec3 L, vec3 sunCol) {
   float ang = acos(clamp(dot(rd, L), -1., 1.));
@@ -299,7 +311,7 @@ vec3 sunDisk(vec3 rd, vec3 L, vec3 sunCol) {
   return c;
 }
 
-// Procedural moon: maria, craters with rims, ray systems and Lommel-Seeliger shading.
+// Procedural craters with rims, ejecta and the odd young ray crater.
 float craterField(vec3 n, float scale, float seed, out float rays) {
   vec3 p = n * scale;
   vec3 i = floor(p), f = fract(p);
@@ -324,56 +336,136 @@ float craterField(vec3 n, float scale, float seed, out float rays) {
   return h;
 }
 
-float moonHeight(vec3 n, out float albedo) {
-  float mar = fbm3(n * 1.7 + 11.3, 5);
-  float maria = smoothstep(.02, .2, mar);
-  float r1, r2, r3;
-  float h = craterField(n, 3.2, 1.3, r1) * .9 + craterField(n, 8.5, 4.7, r2) * .45 + craterField(n, 22., 9.1, r3) * .2;
-  h *= mix(1., .45, maria); // maria are smoother
-  float speck = fbm3(n * 40., 3);
-  albedo = mix(.92, .52, maria) * (.9 + .12 * speck) + (r1 + r2 * .5) * .35;
-  return h + fbm3(n * 60., 2) * .04;
+// The full moon uses the real near side's layout, so it reads instantly as our Moon.
+// Landmarks are in the disk's own frame: x right, y up, z toward the viewer.
+vec3 onDisk(vec2 c) { return vec3(c, sqrt(max(1. - dot(c, c), 0.))); }
+float arcTo(vec3 n, vec2 c) { return acos(clamp(dot(n, onDisk(c)), -1., 1.)); }
+float mare(vec3 n, vec2 c, float r, float warp) { return smoothstep(r * 1.1, r * .8, arcTo(n, c) + warp); }
+
+float maria(vec3 n) {
+  // Multi-scale warp gives the lava plains ragged, bay-like shores instead of round blobs.
+  float w = fbm3(n * 3.5 + 3.7, 6) * .2 + fbm3(n * 11. + 8.1, 4) * .08 + fbm3(n * 30. + 1.9, 3) * .03;
+  float m = 0.;
+  m = max(m, mare(n, vec2(-.30, .50), .31, w));       // Imbrium
+  m = max(m, mare(n, vec2(.23, .41), .17, w));        // Serenitatis
+  m = max(m, mare(n, vec2(.43, .12), .21, w));        // Tranquillitatis
+  m = max(m, mare(n, vec2(.75, .30), .115, w * .6));  // Crisium
+  m = max(m, mare(n, vec2(.65, -.10), .15, w));       // Fecunditatis
+  m = max(m, mare(n, vec2(.44, -.29), .09, w));       // Nectaris
+  m = max(m, mare(n, vec2(.07, .23), .08, w));        // Vaporum
+  m = max(m, mare(n, vec2(-.20, -.35), .17, w));      // Nubium
+  m = max(m, mare(n, vec2(-.58, -.41), .10, w));      // Humorum
+  m = max(m, mare(n, vec2(-.30, -.14), .10, w));      // Cognitum
+  m = max(m, mare(n, vec2(-.36, .16), .13, w));       // Insularum
+  m = max(m, mare(n, vec2(-.64, .08), .30, w * 1.4)); // Oceanus Procellarum
+  m = max(m, mare(n, vec2(-.54, .40), .20, w * 1.4));
+  m = max(m, mare(n, vec2(-.50, -.21), .17, w * 1.4));
+  // Mare Frigoris: a thin band across the north.
+  float fy = abs(n.y - .8 - .04 * sin(n.x * 5.)) + w * .35;
+  m = max(m, smoothstep(.06, .02, fy) * smoothstep(.55, .3, abs(n.x + .04)) * smoothstep(-.1, .15, fbm3(n * 9. + 2.2, 3)));
+  return m;
 }
 
-vec4 moonDisk(vec3 rd, vec3 M) {
-  vec3 w = M;
-  vec3 u = normalize(cross(vec3(0., 1., 0.), w));
-  vec3 v = cross(w, u);
-  float R = radians(uBodyRadius);
+// A young crater with a bright ray system (Tycho, Copernicus, Kepler...).
+float rays(vec3 n, vec2 c, float core, float len, float k, float seed, inout float spot) {
+  vec3 cp = onDisk(c);
+  float d = acos(clamp(dot(n, cp), -1., 1.));
+  spot = max(spot, smoothstep(core * 1.5, core * .5, d));
+  if (d > len * 4.) return 0.;
+  vec3 tu = normalize(cross(vec3(0., 1., 0.), cp)), tv = cross(cp, tu);
+  float a = atan(dot(n, tv), dot(n, tu));
+  vec2 dv = vec2(cos(a), sin(a));
+  // Broad soft streaks with a few finer ones, patchy along their length like real ejecta.
+  float s = pow(vnoise2(dv * k + seed), 3.5) * 1.3 + pow(vnoise2(dv * k * 2.2 + seed + 3.1), 4.) * .6;
+  s *= .35 + 1.1 * smoothstep(-.25, .35, fbm3(n * 16. + seed, 4));
+  return s * exp(-d / len) * smoothstep(core * .7, core * 2.2, d);
+}
+
+// Height of the lunar surface at unit direction n; albedo only when asked (normals skip it).
+float moonSurface(vec3 n, bool detail, bool wantAlbedo, out float albedo) {
+  float mar = maria(n);
+  float r1, r2, r3, r4 = 0.;
+  float h = craterField(n, 3.4, 1.3, r1) * .9 + craterField(n, 9., 4.7, r2) * .45 + craterField(n, 23., 9.1, r3) * .2;
+  if (detail) h += craterField(n, 58., 13.7, r4) * .09;
+  h *= mix(1., .35, mar); // the maria are lava plains with few craters
+  albedo = 0.;
+  if (wantAlbedo) {
+    // Highlands bright and speckled, maria darker and smoother.
+    float splash = pow(1. - worley(n * 18. + 4.4), 6.) + .6 * pow(1. - worley(n * 41. + 9.2), 7.);
+    float hl = .8 + .12 * fbm3(n * 7. + 1.3, 5) + .1 * fbm3(n * 26., 4) + .12 * splash;
+    // Lava plains: darker, with lighter and darker flows (Tranquillitatis a touch darker).
+    float ma = .27 + .12 * fbm3(n * 4. + 2.1, 5) + .07 * fbm3(n * 13. + 5., 4) + .03 * fbm3(n * 40. + 7., 3) + .05 * splash
+             - .05 * smoothstep(.3, .1, arcTo(n, vec2(.43, .12)));
+    albedo = mix(hl, ma, smoothstep(0., 1., mar));
+    albedo += (r1 * .6 + r2 * .5 + r3 * .4 + r4 * .3) * .28 * (1. - mar * .5); // fresh crater rims
+    float spot = 0., spot2 = 0.;
+    float ray = rays(n, vec2(-.13, -.70), .035, .5, 4.5, 1.1, spot)
+              + rays(n, vec2(-.31, .16), .03, .2, 4., 2.7, spot) * .75
+              + rays(n, vec2(-.57, .13), .02, .14, 3.5, 4.3, spot) * .6
+              + rays(n, vec2(.64, .25), .012, .12, 3., 6.1, spot) * .45;
+    ray += rays(n, vec2(-.71, .40), .016, .05, 4., 7.9, spot2) * .3; // Aristarchus, the brightest spot
+    albedo += ray * .42 + spot * .35 + spot2 * .55;
+    // Dark-floored craters: Plato and Grimaldi.
+    albedo *= 1. - .45 * smoothstep(.045, .025, arcTo(n, vec2(-.08, .81))) - .4 * smoothstep(.075, .045, arcTo(n, vec2(-.9, -.1)));
+  }
+  return h + fbm3(n * 70., 2) * .03;
+}
+
+vec4 moonDisk(vec3 rd, vec3 M, bool detail) {
+  vec3 u = normalize(cross(M, vec3(0., 1., 0.)));
+  vec3 v = cross(u, M);
+  float R = radians(uMoonRadius);
   vec2 q = vec2(dot(rd, u), dot(rd, v)) / sin(R);
   float r = length(q);
   float aa = pixelAngle() * 1.5 / R;
-  float mask = smoothstep(1. + aa, 1. - aa, r) * step(0., dot(rd, w));
+  float mask = smoothstep(1. + aa, 1. - aa, r) * step(0., dot(rd, M));
   if (mask <= 0.) return vec4(0.);
   vec3 n = vec3(q, sqrt(max(1. - dot(q, q), 0.)));
-  // Rotate the surface a little so it isn't perfectly face-on (libration).
-  float a = .35, b = -.2;
-  mat3 rot = mat3(cos(a), 0., -sin(a), 0., 1., 0., sin(a), 0., cos(a)) * mat3(1., 0., 0., 0., cos(b), sin(b), 0., -sin(b), cos(b));
-  vec3 ns = rot * n;
-  float alb;
-  float h = moonHeight(ns, alb);
-  // Normal from the height field (finite differences on the sphere).
-  float e = .004, tmp;
-  vec3 tx = normalize(cross(vec3(0., 1., 0.), n) + 1e-4);
-  vec3 ty = cross(n, tx);
-  float hx = moonHeight(normalize(rot * (n + tx * e)), tmp);
-  float hy = moonHeight(normalize(rot * (n + ty * e)), tmp);
-  vec3 nn = normalize(n - (tx * (hx - h) + ty * (hy - h)) / e * .018);
-  vec3 Ls = normalize(vec3(.52, .12, .85)); // lit from the right and behind the viewer: waxing gibbous
+  float alb, tmp;
+  float h = moonSurface(n, detail, true, alb);
+  vec3 nn = n;
+  if (detail) {
+    // Normal from the height field (finite differences on the sphere).
+    float e = .0025;
+    vec3 tx = normalize(cross(vec3(0., 1., 0.), n) + 1e-4);
+    vec3 ty = cross(n, tx);
+    float hx = moonSurface(normalize(n + tx * e), true, false, tmp);
+    float hy = moonSurface(normalize(n + ty * e), true, false, tmp);
+    nn = normalize(n - (tx * (hx - h) + ty * (hy - h)) / e * .02 * (1. - smoothstep(.8, .98, r)));
+  }
+  // The sun's direction in the disk frame, so the lit phase matches where the sun really is.
+  vec3 S = sunDir();
+  vec3 Ls = normalize(vec3(dot(S, u), dot(S, v), dot(S, -M)));
   float mu0 = max(dot(nn, Ls), 0.);
-  float mu = max(n.z, 1e-3);
-  float ls = 2. * mu0 / (mu0 + mu);
-  float lit = mix(ls, mu0 * 1.6, .38) * smoothstep(-.02, .08, dot(n, Ls));
-  vec3 col = vec3(1.0, .97, .92) * alb * lit;
-  col += vec3(.35, .45, .6) * alb * .018; // earthshine on the dark side
+  float mu = max(n.z, .08);
+  float ls = 2. * mu0 / (mu0 + mu); // Lommel-Seeliger: a full moon stays bright right to the limb
+  float lit = mix(ls, mu0 * 1.6, .3) * smoothstep(-.03, .06, dot(n, Ls));
+  lit *= 1. - .18 * pow(r, 6.); // a whisper of limb darkening for depth
+  vec3 col = vec3(1., .985, .96) * alb * lit;
+  col += vec3(.35, .45, .6) * alb * .015; // earthshine on the unlit part
   return vec4(col * mask, mask);
 }
 
 vec3 moonGlow(vec3 rd, vec3 M) {
   float ang = acos(clamp(dot(rd, M), -1., 1.));
-  float R = radians(uBodyRadius);
-  float x = max(ang - R, 0.);
-  return vec3(.55, .66, .9) * (.5 * exp(-x * 22.) + .14 * exp(-x * 5.5) + .04 * exp(-x * 1.6));
+  float x = max(ang - radians(uMoonRadius), 0.);
+  return vec3(.6, .7, .92) * (.55 * exp(-x * 18.) + .2 * exp(-x * 5.) + .06 * exp(-x * 1.5));
+}
+
+// Thin moonlit cloud streaks drifting across the moon's face.
+vec4 moonVeil(vec3 rd, vec3 M, float t) {
+  if (uVeil <= 0. || dot(rd, M) < 0.) return vec4(0.);
+  vec3 u = normalize(cross(M, vec3(0., 1., 0.)));
+  vec3 v = cross(u, M);
+  vec2 q = vec2(dot(rd, u), dot(rd, v)) / sin(radians(uMoonRadius));
+  float r = length(q);
+  if (r > 4.2) return vec4(0.);
+  vec2 p = vec2(q.x * .5 - t * .02, q.y * 2.4);
+  float n = fbm2(p + uSeed * 1.7, 6) + .4 * fbm2(p * 2.7 + vec2(-t * .012, 0.) + 4.1, 4);
+  float band = exp(-pow((q.y + .22) / .5, 2.)) + .55 * exp(-pow((q.y - .62) / .22, 2.)) + .35 * exp(-pow((q.y + 1.2) / .3, 2.));
+  float d = smoothstep(.62, 1., n) * band * smoothstep(4.2, 2.4, r) * uVeil;
+  float glow = exp(-max(r - .85, 0.) * 1.6); // forward scattering: veils glow silver near the disk
+  return vec4(vec3(.74, .8, .92) * (.04 + .95 * glow), clamp(d, 0., .85));
 }
 
 // ------------------------------------------------------------------ stars & milky way
@@ -477,7 +569,7 @@ float azOf(vec3 rd) { return atan(rd.x, -rd.z); }
 float elOf(vec3 rd) { return asin(clamp(rd.y, -1., 1.)); }
 
 float layerHeight(int i, float az, float bodyAz) {
-  float dip = 1. - .65 * exp(-pow((az - bodyAz) / .16, 2.)); // a valley where the sun sets
+  float dip = 1. - .4 * exp(-pow((az - bodyAz) / .22, 2.)); // a gentle valley under the moon; its foot still hides behind the ridges
   if (i == 0) return ridge(az, 2.2, radians(4.6), radians(.5), 3.1 + uSeed) * mix(1., dip, .6);
   if (i == 1) return ridge(az, 3.1, radians(3.4), radians(.35), 7.7 + uSeed) * dip;
   if (i == 2) return ridge(az, 4.6, radians(2.0), radians(.2), 12.9 + uSeed) * mix(dip, 1., .3);
@@ -517,19 +609,22 @@ float layerCover(int i, vec3 rd, float bodyAz, out float slope) {
 }
 
 // ------------------------------------------------------------------ scene
-struct Light { vec3 L; float Lint; vec3 col; vec3 ambTop; vec3 ambBot; vec3 horizon; };
+struct Light { vec3 L; float Lint; vec3 col; vec3 cloudCol; vec3 ambTop; vec3 ambBot; vec3 horizon; };
 
 Light makeLight(float t) {
   Light l;
   vec3 ro = vec3(0., R0 + CAMH, 0.);
-  l.L = bodyDir();
+  // The key light: the moon at night, otherwise the sun (which may be behind the camera or just set).
   if (uNight > .5) {
-    l.L = normalize(l.L + vec3(0., .05, 0.));
+    l.L = normalize(moonDir() + vec3(0., .05, 0.));
     l.Lint = 20. * .0022;
   } else {
+    l.L = sunDir();
     l.Lint = 20.;
   }
   l.col = l.Lint * transmittance(ro, l.L);
+  // Clouds sit higher, so they keep catching the sun a little after it sets (pink twilight clouds).
+  l.cloudCol = l.Lint * transmittance(vec3(0., R0 + 1500., 0.), l.L);
   l.ambTop = atmosphere(ro, vec3(0., 1., 0.), l.L, l.Lint, 1e9, false, t) * 2.2;
   vec3 hz = normalize(vec3(.3, .06, -1.));
   l.horizon = atmosphere(ro, hz, l.L, l.Lint, 1e9, false, t);
@@ -549,26 +644,25 @@ vec3 nightBase(vec3 rd) {
 
 vec3 sky(vec3 rd, Light lt, float t, bool reflection, float jitter, vec2 uv) {
   vec3 ro = vec3(0., R0 + CAMH, 0.);
-  vec3 B = bodyDir();
   vec3 base = atmosphere(ro, rd, lt.L, lt.Lint, 1e9, !reflection && uNight < .5, t);
   if (uNight > .5) base += nightBase(rd);
   vec3 c = base;
   // Stars and the Milky Way sit behind everything.
   if (uStars > 0.) c += stars(rd, t) * uStars * (reflection ? .35 : 1.);
-  // Sun or moon.
-  if (uNight > .5) {
-    vec4 m = moonDisk(rd, B);
-    c = mix(c, m.rgb * .62, m.a);
-    c += moonGlow(rd, B) * .22;
-  } else {
-    c += sunDisk(rd, B, lt.col * .05);
-  }
+  // A sun in view (only when it is in front of the camera).
+  if (uNight < .5) c += sunDisk(rd, sunDir(), lt.col * .05);
+  // The moon is in every sky. By day the air in front of it (base) still scatters light over it.
+  vec3 M = moonDir();
+  vec4 m = moonDisk(rd, M, !reflection);
+  c = mix(c, base + m.rgb * (uNight > .5 ? .56 : uMoonDay), m.a);
+  if (uNight > .5) c += moonGlow(rd, M) * .22 * (1. - m.a); // glow around the disk, not over it
+  vec4 veil = moonVeil(rd, M, t);
+  c = mix(c, base + veil.rgb * (uNight > .5 ? .55 : uMoonDay * .6), veil.a * (1. - .45 * m.a));
   // High cirrus, then cumulus.
-  vec4 ci = cirrus(ro, rd, lt.L, lt.col, lt.ambTop, t);
+  vec4 ci = cirrus(ro, rd, lt.L, lt.cloudCol, lt.ambTop, t);
   c = mix(c, ci.rgb / max(ci.a, 1e-3), ci.a * (1. - (uNight > .5 ? .2 : 0.)));
   float depth;
-  vec3 lightCol = lt.col;
-  vec4 cl = clouds(ro, rd, lt.L, lightCol, lt.ambTop, lt.ambBot, t, reflection ? 40 : 72, jitter, depth);
+  vec4 cl = clouds(ro, rd, lt.L, lt.cloudCol, lt.ambTop, lt.ambBot, t, reflection ? 40 : 72, jitter, depth);
   // Aerial perspective on the clouds.
   float fog = 1. - exp(-depth / (reflection ? 30000. : 42000.) * mix(1., 1.6, uHaze - 1.));
   vec3 cloudCol = mix(cl.rgb, base * (1. - cl.a), clamp(fog, 0., 1.) * .85);
@@ -588,7 +682,7 @@ vec3 terrainColor(int layer, float slope, vec3 rd, Light lt, float t) {
   // Snow-dusted peaks catch the light on the farthest range.
   if (layer == 0) {
     float el = elOf(rd);
-    float top = layerHeight(0, azOf(rd), azOf(bodyDir()));
+    float top = layerHeight(0, azOf(rd), azOf(moonDir()));
     float snow = smoothstep(radians(2.6), radians(4.2), top) * smoothstep(top - radians(1.1), top - radians(.1), el);
     col += lt.col * .012 * snow * (.4 + .6 * facing) + lt.ambTop * .05 * snow;
   }
@@ -679,7 +773,7 @@ vec3 scenery(vec3 rd, Light lt, float t, bool reflection, float jitter, vec2 uv,
 vec3 render(vec2 uv, float t, float jitter) {
   vec3 rd = camRay(uv);
   Light lt = makeLight(t);
-  float bodyAz = azOf(bodyDir());
+  float bodyAz = azOf(moonDir());
   vec3 col;
   if (rd.y > -.0005) {
     col = scenery(rd, lt, t, false, jitter, uv, bodyAz);
@@ -698,10 +792,10 @@ vec3 render(vec2 uv, float t, float jitter) {
     fres = mix(fres, 1., .06);
     vec3 deep = lt.ambTop * vec3(.05, .09, .1) + lt.col * .0025 * vec3(.2, .45, .5) + vec3(.001, .003, .005);
     col = mix(deep, refl, fres);
-    // Sun or moon glitter path.
-    vec3 B = bodyDir();
-    float spec = pow(max(dot(r, B), 0.), uNight > .5 ? 420. : 700.);
-    col += (uNight > .5 ? vec3(.8, .88, 1.) * .12 : lt.col * .004) * spec * fres * 6.;
+    // Glitter paths: the moon's always, a visible sun's by day.
+    float spec = pow(max(dot(r, moonDir()), 0.), 380.);
+    col += vec3(.8, .88, 1.) * (uNight > .5 ? .12 : uMoonDay * .03) * spec * fres * 6.;
+    if (uNight < .5) col += lt.col * .004 * pow(max(dot(r, sunDir()), 0.), 700.) * fres * 6.;
     // Low mist drifting over the far water (patches follow the water surface, not screen columns).
     if (uMist > 0.) {
       vec2 mq = (p.xz + windOffset(t) * 1.5) / vec2(420., 160.);

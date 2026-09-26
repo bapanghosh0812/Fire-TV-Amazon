@@ -13,7 +13,13 @@
       "5b": "The lighthouse glowed purple and gold, the most beautiful light the moon had ever seen. The baby star followed it all the way home, and Luna learned that small dragons can make big light.",
       "6": "Back in her pillow room, Luna yawned a sleepy dragon yawn. Outside, the light kept sweeping gently across the sky. Goodnight, Luna. Goodnight, little stars."
     },
-    "choice": { "prompt": "How should Luna bring the light back?", "options": { "a": "Ask the comets for help", "b": "Use her own dragon fire" } }
+    "choice": {
+      "prompt": "How should Luna bring the light back?",
+      "options": {
+        "a": "Ask the comets for help",
+        "b": "Use her own dragon fire"
+      }
+    }
   },
   "tiger-roar": {
     "title": "The Tiger Who Forgot His Roar",
@@ -46,6 +52,83 @@
       "2": "So Beep gathered stardust from the garden paths, packed it into a glowing seed, and planted it in the softest, darkest patch of sky.",
       "3": "Beep waited, and watered, and waited some more. Stars take millions of years to grow, the comet reminded, but a gardener must always begin somewhere.",
       "4": "That night, Beep arranged the brightest seeds into the shape of a watering can. Now, if you look up very carefully, you might just see Beep’s constellation smiling back."
+    }
+  },
+  "luna-sleepy-comet": {
+    "title": "Luna and the Sleepy Comet",
+    "summary": "A tired little comet can’t keep flying, so Luna finds the coziest crater on the moon for a nap.",
+    "pages": {
+      "0": "One quiet night, Luna was polishing the stars by the lighthouse when something went wobble, wobble, bump! A little comet named Zoom had tumbled onto the moon.",
+      "1": "“I’m so tired,” yawned Zoom. “I’ve been flying round and round the sky all week, and my tail won’t sparkle anymore.” Its glow was as dim as a sleepy candle.",
+      "2": "Luna knew exactly what to do. She found the softest crater on the moon, filled it with moon-dust pillows, and tucked Zoom in under a blanket of starlight.",
+      "3": "Then she hummed the lullaby her grandmother used to sing, soft and slow, like waves on a silver sea. Zoom’s eyes grew heavy, and heavier, and closed.",
+      "4": "In the morning, Zoom woke up as bright as a firework. “Hop on!” it laughed, and it gave Luna the fastest, happiest ride all the way around the moon. Goodnight, Zoom. Goodnight, Luna."
+    }
+  },
+  "luna-moon-garden": {
+    "title": "Luna’s Silver Garden",
+    "summary": "Luna plants tiny seeds that only grow in moonlight, and learns that the best things take time.",
+    "pages": {
+      "0": "Luna found a pouch of tiny silver seeds hidden behind the lighthouse door. A note inside said: “Plant me in moonlight. Be patient. I will glow.”",
+      "1": "So Luna dug small holes in the soft moon-dust and planted every seed. She watered them with dew from the comets and waited… and waited. Nothing happened.",
+      "2": "“Maybe they don’t like me,” Luna sighed. But every night she sang to the seeds and told them stories about the stars, just in case they were listening.",
+      "3": "On the seventh night, a tiny silver sprout peeked out. Then another, and another, until the whole garden was full of little leaves that shimmered like frost.",
+      "4": "Soon the flowers opened, glowing soft and white, lighting a path for every traveler in the night sky. And Luna learned that the most beautiful things are worth waiting for."
+    }
+  },
+  "pip-rainbow-map": {
+    "title": "Captain Pip and the Rainbow Map",
+    "summary": "A map painted in seven colors leads Pip on a treasure hunt across the sky.",
+    "pages": {
+      "0": "A gust of wind blew a strange map right into Captain Pip’s paws. It wasn’t drawn in ink. It was painted in stripes of red, orange, yellow, green, blue, indigo and violet.",
+      "1": "“Each color is a clue!” cried Pip. The red stripe led to a cloud shaped like a strawberry. The orange stripe pointed to a sunset lighthouse. The yellow one hid in a field of sunflowers floating in the sky.",
+      "2": "Green, blue and indigo took her over a forest, across a river of mist and through a tunnel of evening sky. At last, the violet stripe ended at a tiny wooden chest.",
+      "3": "Pip opened it with a gasp. Inside there was no gold, only seeds. Thousands of seeds, and a note: “Treasure grows when you share it.”",
+      "4": "So Pip sailed home and gave seeds to everyone in the floating city. By spring, every rooftop bloomed with flowers, and the city had never been so rich."
+    }
+  },
+  "pip-thunder-drum": {
+    "title": "Captain Pip and the Thunder Drum",
+    "summary": "The thunder keeps the floating city awake, until Pip meets the lonely giant who plays it.",
+    "pages": {
+      "0": "Boom! Boom! BOOM! Every night the thunder rolled over the floating city, and nobody could sleep. The babies cried, the cats hid, and even the moon looked grumpy.",
+      "1": "Captain Pip put on her bravest hat and sailed right into the dark clouds. There, sitting on a storm cloud, was a giant with a huge silver drum.",
+      "2": "“Why do you drum so loudly?” asked Pip. The giant looked down at his boots. “Because it’s lonely up here,” he said, “and loud drumming makes me feel less alone.”",
+      "3": "Pip had an idea. She taught the giant to drum softly, pitter-patter, like rain on a roof. Then she brought her whole crew to sing along with him.",
+      "4": "Now, every night, the giant plays a gentle rain-song, and the whole floating city falls asleep to it. And the giant is never lonely, because Pip visits every Sunday."
+    }
+  },
+  "beep-moon-faces": {
+    "title": "Beep and the Moon’s Many Faces",
+    "summary": "Why does the moon change shape? Beep finds out with a lamp and a ball.",
+    "pages": {
+      "0": "Every night, Beep watched the moon from the garden at the edge of space. Sometimes it was a thin smile, sometimes half a cookie, and sometimes a big round plate. “Is the moon shrinking?” Beep wondered.",
+      "1": "The wise old comet chuckled. “The moon never changes size,” it said. “And it doesn’t make its own light. It shines because the sun lights it up, like a flashlight shining on a ball.”",
+      "2": "Beep tried it with a lamp and a ball. The sun always lights exactly half of the moon. But as the moon travels around the Earth, we see different amounts of that bright half.",
+      "3": "When the lit side faces us, we see a full moon. When it faces away, we see almost nothing: a new moon. In between come the crescents and the half moons.",
+      "4": "The whole journey takes about twenty-nine and a half days. So Beep made a moon calendar, and every night Beep draws the moon’s face and says, “Goodnight, moon. See you tomorrow, in a brand new shape.”"
+    }
+  },
+  "beep-rainbow-recipe": {
+    "title": "Beep and the Rainbow Recipe",
+    "summary": "Beep discovers the secret ingredients of a rainbow: sunlight, raindrops and the right place to stand.",
+    "pages": {
+      "0": "After a rain shower, a rainbow stretched across Beep’s garden. “I want to make one too!” said Beep. “But what is a rainbow made of?”",
+      "1": "The comet explained, “Sunlight looks white, but it is really a mix of many colors. When sunlight passes through a raindrop, it bends and bounces, and the colors spread apart.”",
+      "2": "Beep wrote down the recipe: one bright sun, lots of tiny raindrops, and one important rule. The sun must be behind you, and the raindrops in front of you.",
+      "3": "So Beep stood with the sun at its back and sprayed a fine mist from its watering-can arm. And there it was, a tiny rainbow: red, orange, yellow, green, blue, indigo and violet.",
+      "4": "From that day on, Beep made a little rainbow every sunny morning, just to say hello to the colors hiding inside the light."
+    }
+  },
+  "raja-banana-race": {
+    "title": "Raja and the Great Banana Race",
+    "summary": "Raja wants to win the jungle race, but a friend in trouble changes everything.",
+    "pages": {
+      "0": "The jungle was having its Great Banana Race, and the prize was the biggest, yellowest banana anyone had ever seen. Raja the tiger stretched his enormous paws. “I’m going to win!” he roared.",
+      "1": "Ready, steady, GO! Raja zoomed ahead of the monkey, the parrot and even the speedy little mouse. He was so fast that his stripes looked blurry.",
+      "2": "But halfway there, Raja heard a small voice. The tortoise was stuck on his back in the mud, waving his legs like an upside-down table. “Help!” he giggled. “I’m upside down!”",
+      "3": "Raja stopped, rolled the tortoise over and gave him a ride on his back. Then the monkey fell in a puddle, so Raja carried her too, and then the parrot, and then the mouse.",
+      "4": "Raja crossed the finish line last, with the whole jungle riding on his back. Everybody cheered, and they cut the giant banana into pieces so every single friend got a slice. Winning together tasted the sweetest."
     }
   }
 }

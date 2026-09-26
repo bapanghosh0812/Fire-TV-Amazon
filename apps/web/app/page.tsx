@@ -74,7 +74,7 @@ export default function Home() {
             </p>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="shot" src="/sky-sunset.jpg" alt="A cinematic sunset over a mountain lake, Storyloom’s background at dusk" />
+          <img className="shot" src="/sky-sunset.jpg" alt="A giant full moon rising over a mountain lake in the pink twilight, Storyloom’s background at dusk" />
         </div>
       </section>
 
@@ -116,7 +116,7 @@ export default function Home() {
       <section className="section" id="safety">
         <div className="split">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="shot" src="/sky-day.jpg" alt="A calm blue sky over a lake with mountains" />
+          <img className="shot" src="/sky-day.jpg" alt="A pale daytime moon in a blue sky over a mountain lake" />
           <div>
             <div className="eyebrow">Safety and privacy</div>
             <h2>

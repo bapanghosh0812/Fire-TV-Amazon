@@ -146,7 +146,7 @@ function Stars({ W, H, visibility, milkyWay }: { W: number; H: number; visibilit
 function CelestialBody({ W, H, phase }: { W: number; H: number; phase: SkyPhase }) {
   const theme = THEMES[phase];
   const isMoon = theme.body === 'moon';
-  const R = W * (isMoon ? 0.066 : phase === 'day' ? 0.07 : 0.085);
+  const R = W * (isMoon ? 0.105 : phase === 'day' ? 0.07 : 0.085); // a big, bright moon like the cinematic sky
   const cx = W * 0.75;
   const cy = H * theme.bodyY;
   const pulse = useRef(new Animated.Value(0)).current;

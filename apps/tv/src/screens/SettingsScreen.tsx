@@ -494,27 +494,30 @@ function ChoiceSheet({ item, settings, onClose }: { item: Extract<Item, { kind: 
   );
 }
 
-const PREVIEW = 'Once upon a time, a little dragon found a light in the dark.';
+// Words for Latin/Devanagari text; CJK has no spaces, so it highlights two characters at a time.
+const PREVIEW_WORDS = /[぀-ヿ㐀-鿿]{1,2}[、。！？]?|\S+/g;
 const SIZE = { s: 0.78, m: 1, l: 1.18, xl: 1.36 } as const;
 const COLOR = { parchment: colors.parchment, white: '#FFFFFF', yellow: '#FFE27A', cyan: '#9EF3FF' } as const;
 const FONT = { story: fonts.body, rounded: fonts.bodyBold, readable: fonts.bodyBlack } as const;
 
 function CaptionPreview({ settings }: { settings: Settings }) {
+  const t = useT();
+  const text = t('settings.cap.preview');
   const marks = useMemo(() => {
     const out: { t: number; s: number; e: number }[] = [];
-    const re = /\S+/g;
+    const re = new RegExp(PREVIEW_WORDS);
     let m: RegExpExecArray | null;
     let i = 0;
-    while ((m = re.exec(PREVIEW))) out.push({ t: i++ * 300, s: m.index, e: m.index + m[0].length });
+    while ((m = re.exec(text))) out.push({ t: i++ * 300, s: m.index, e: m.index + m[0].length });
     return out;
-  }, []);
+  }, [text]);
   return (
     <View style={styles.preview}>
       <View style={settings.captionBackground === 'box' ? styles.previewBox : undefined}>
         <ReadAlongText
-          text={PREVIEW}
+          text={text}
           marks={marks}
-          activeIndex={4}
+          activeIndex={Math.min(4, marks.length - 1)}
           highlight={settings.readAlong}
           mode={settings.highlightStyle}
           color={COLOR[settings.captionColor]}

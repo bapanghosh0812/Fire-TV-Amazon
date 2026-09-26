@@ -13,5 +13,6 @@ export type RootStackParamList = {
   Lobby: { starter?: string } | undefined;
   Weaving: { storyId: string };
   Player: { storyId: string };
+  Channel: { channelId: string };
   Settings: { section?: string } | undefined;
 };

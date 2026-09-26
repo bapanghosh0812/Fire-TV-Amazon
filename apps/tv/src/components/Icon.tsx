@@ -49,7 +49,15 @@ export type IconName =
   | 'heart'
   | 'data'
   | 'sun'
-  | 'timer';
+  | 'timer'
+  | 'tv'
+  | 'rain'
+  | 'wave'
+  | 'tree'
+  | 'drop'
+  | 'flame'
+  | 'wind'
+  | 'headphones';
 
 interface Props {
   name: IconName;
@@ -300,6 +308,38 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
         <>
           <Circle cx={12} cy={13.5} r={7.5} {...p} />
           <Path d="M12 9.5v4l2.5 2M9.5 2.5h5M19 6l1.5-1.5" {...p} />
+        </>
+      );
+    case 'tv':
+      return (
+        <>
+          <Rect x={2.5} y={5.5} width={19} height={12.5} rx={2.2} {...p} />
+          <Path d="M8 21h8M9 2.5l3 3 3-3" {...p} />
+        </>
+      );
+    case 'rain':
+      return (
+        <>
+          <Path d="M7 14.5a4.5 4.5 0 1 1 1.3-8.8A5.5 5.5 0 0 1 18.8 8a3.5 3.5 0 0 1-.8 6.5z" {...p} />
+          <Path d="M8 17.5l-1 3M12.5 17.5l-1 3M17 17.5l-1 3" {...p} />
+        </>
+      );
+    case 'wave':
+      return <Path d="M2.5 9c2.4 0 2.4-2 4.75-2S9.6 9 12 9s2.4-2 4.75-2S19.1 9 21.5 9M2.5 15c2.4 0 2.4-2 4.75-2S9.6 15 12 15s2.4-2 4.75-2 2.35 2 4.75 2" {...p} />;
+    case 'tree':
+      return <Path d="M12 2.5l-5.5 7h3l-4 5.5h4L6 19.5h12l-3.5-4.5h4l-4-5.5h3zM12 19.5v2.5" {...p} />;
+    case 'drop':
+      return <Path d="M12 3s6.5 6.9 6.5 11.4A6.5 6.5 0 0 1 5.5 14.4C5.5 9.9 12 3 12 3z" {...p} />;
+    case 'flame':
+      return <Path d="M12 21.5c-4 0-6.5-2.8-6.5-6.4 0-3.6 3-5.6 3.5-9.6 2.6 1.5 4 3.8 4.2 6.3.9-.8 1.5-2 1.7-3.3 2.1 1.8 3.6 4.1 3.6 6.8 0 3.5-2.5 6.2-6.5 6.2z" {...p} />;
+    case 'wind':
+      return <Path d="M3 8.5h11a3 3 0 1 0-3-3M3 12.5h16a3 3 0 1 1-3 3M3 16.5h7" {...p} />;
+    case 'headphones':
+      return (
+        <>
+          <Path d="M3.5 17v-4a8.5 8.5 0 0 1 17 0v4" {...p} />
+          <Rect x={3} y={14} width={4.5} height={7} rx={1.6} {...p} />
+          <Rect x={16.5} y={14} width={4.5} height={7} rx={1.6} {...p} />
         </>
       );
   }
